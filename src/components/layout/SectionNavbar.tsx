@@ -127,14 +127,14 @@ export default function SectionNavbar() {
                       className="relative group"
                     >
                       <button
-                        className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md ${
+                        className={`w-26 h-12 rounded-full flex items-center justify-center shadow-2xl py-2 ${
                           activeSection === item.section
                             ? "bg-black text-white"
                             : "bg-white text-black border border-gray-200"
                         }`}
                         onClick={() => navigateToSection(item.section)}
                       >
-                        <span className="text-xs font-medium">{idx + 1}</span>
+                        <span className="text-xs font-medium">{item.name}</span>
                       </button>
 
                       {/* Small tooltip */}
@@ -153,9 +153,6 @@ export default function SectionNavbar() {
           {/* Active section indicator on collapsed state */}
           {!isExpanded && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="text-xs font-bold text-white">
-                {/* {activeSection + 1} */}
-              </span>
             </div>
           )}
         </div>

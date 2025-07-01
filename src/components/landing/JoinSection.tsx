@@ -15,18 +15,18 @@ const JoinSection = () => {
           </p>
         </div>
 
-        {/* Full-width cards layout */}
-        <div className="space-y-6 md:space-y-8">
-          {/* Traveler Card */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 md:p-8 rounded-2xl md:rounded-3xl group hover:from-gray-100 hover:to-gray-200 transition-all duration-500">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-6 md:gap-8">
-              {/* Icon and title section */}
-              <div className="flex flex-col items-center text-center lg:w-1/4">
-                <div className="bg-black rounded-full w-16 h-16 md:w-24 md:h-24 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Compass size={28} className="text-white md:hidden" />
-                  <Compass size={36} className="text-white hidden md:block" />
+        {/* Full-width cards layout - reduced spacing between cards */}
+        <div className="space-y-4 md:space-y-6">
+          {/* Traveler Card - reduced padding and sizes */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 md:p-6 rounded-xl md:rounded-2xl group hover:from-gray-100 hover:to-gray-200 transition-all duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4 md:gap-6">
+              {/* Icon and title section - reduced icon size */}
+              <div className="flex flex-col items-center text-center lg:w-1/5">
+                <div className="bg-black rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Compass size={20} className="text-white md:hidden" />
+                  <Compass size={24} className="text-white hidden md:block" />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-black">
+                <h3 className="text-xl md:text-2xl font-bold text-black">
                   Join as Traveler
                 </h3>
               </div>
@@ -38,28 +38,28 @@ const JoinSection = () => {
                   adventurers, and create memories that last a lifetime.
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-700 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-black rounded-full shrink-0"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 mb-4">
+                  <div className="flex items-center gap-2 text-gray-700 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-black rounded-full shrink-0"></div>
                     <span>Access to exclusive events</span>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-700 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-black rounded-full shrink-0"></div>
-                    <span>Personalized recommendations</span>
+                  <div className="flex items-center gap-2 text-gray-700 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-black rounded-full shrink-0"></div>
+                    <span>Recommendations</span>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-700 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-black rounded-full shrink-0"></div>
+                  <div className="flex items-center gap-2 text-gray-700 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-black rounded-full shrink-0"></div>
                     <span>Community support</span>
                   </div>
                 </div>
               </div>
 
-              {/* Button section */}
-              <div className="lg:w-1/4 flex items-center justify-center mt-2 md:mt-0">
-                <button className="w-full max-w-xs bg-black text-white py-3 md:py-4 rounded-full hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg font-medium group">
+              {/* Button section - smaller button */}
+              <div className="lg:w-1/6 flex items-center justify-center mt-2 md:mt-0 lg:ml-15">
+                <button className="w-full max-w-xs bg-black text-white py-2 md:py-3 rounded-full hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base font-medium group">
                   Start Exploring
                   <ArrowRight
-                    size={18}
+                    size={16}
                     className="group-hover:translate-x-1 transition-transform"
                   />
                 </button>
@@ -67,49 +67,49 @@ const JoinSection = () => {
             </div>
           </div>
 
-          {/* Organizer Card */}
-          <div className="bg-gradient-to-r from-black to-gray-800 p-5 md:p-8 rounded-2xl md:rounded-3xl group hover:from-gray-800 hover:to-gray-700 transition-all duration-500">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-6 md:gap-8">
-              {/* Icon and title section */}
-              <div className="flex flex-col items-center text-center lg:w-1/4">
-                <div className="bg-white rounded-full w-16 h-16 md:w-24 md:h-24 flex items-center justify-center mb-3 md:mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Calendar size={28} className="text-black md:hidden" />
-                  <Calendar size={36} className="text-black hidden md:block" />
+          {/* Organizer Card - reduced padding and sizes */}
+          <div className="bg-gradient-to-r from-black to-gray-800 p-4 md:p-6 rounded-xl md:rounded-2xl group hover:from-gray-800 hover:to-gray-700 transition-all duration-500">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4 md:gap-6">
+              {/* Icon and title section - reduced icon size */}
+              <div className="flex flex-col items-center text-center lg:w-1/5">
+                <div className="bg-white rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center mb-2 md:mb-3 group-hover:scale-110 transition-transform duration-300">
+                  <Calendar size={20} className="text-black md:hidden" />
+                  <Calendar size={24} className="text-black hidden md:block" />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-white">
+                <h3 className="text-xl md:text-2xl font-bold text-white">
                   Join as Organizer
                 </h3>
               </div>
 
-              {/* Content section */}
-              <div className="lg:w-1/2">
-                <p className="text-gray-300 mb-4 md:mb-6 text-base md:text-lg leading-relaxed">
+              {/* Content section - reduced text size */}
+              <div className="lg:w-3/5">
+                <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base leading-relaxed">
                   Share your passion, build your business, and create
                   extraordinary experiences for travelers around the world.
                 </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-white rounded-full shrink-0"></div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3 mb-4">
+                  <div className="flex items-center gap-2 text-gray-300 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0"></div>
                     <span>Global reach and exposure</span>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-white rounded-full shrink-0"></div>
+                  <div className="flex items-center gap-2 text-gray-300 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0"></div>
                     <span>Professional event tools</span>
                   </div>
-                  <div className="flex items-center gap-2 md:gap-3 text-gray-300 text-sm md:text-base">
-                    <div className="w-2 h-2 bg-white rounded-full shrink-0"></div>
+                  <div className="flex items-center gap-2 text-gray-300 text-xs md:text-sm">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full shrink-0"></div>
                     <span>Revenue optimization</span>
                   </div>
                 </div>
               </div>
 
-              {/* Button section */}
-              <div className="lg:w-1/4 flex items-center justify-center mt-2 md:mt-0">
-                <button className="w-full max-w-xs bg-white text-black py-3 md:py-4 rounded-full hover:bg-gray-100 transition-all duration-300 flex items-center justify-center gap-2 md:gap-3 text-base md:text-lg font-medium group">
+              {/* Button section - smaller button */}
+              <div className="lg:w-1/6 flex items-center justify-center mt-2 md:mt-0 lg:mr-14">
+                <button className="w-full max-w-xs bg-white text-black py-2 md:py-3 rounded-full hover:bg-gray-100 transition-all duration-300 flex items-center justify-center gap-2 text-sm md:text-base font-medium group">
                   Start Organizing
                   <ArrowRight
-                    size={18}
+                    size={16}
                     className="group-hover:translate-x-1 transition-transform"
                   />
                 </button>
