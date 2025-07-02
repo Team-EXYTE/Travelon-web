@@ -1,5 +1,6 @@
 import React from "react";
 import { Megaphone, TrendingUp, DollarSign, Star } from "lucide-react";
+import Image from "next/image";
 
 const OrganizersFeatures = () => {
   const features = [
@@ -30,7 +31,7 @@ const OrganizersFeatures = () => {
   ];
 
   return (
-    <section className="py-8 md:py-12 bg-black text-white min-h-screen">
+    <section className="py-8 md:py-12 bg-black text-white min-h-screen relative">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6">
@@ -68,6 +69,17 @@ const OrganizersFeatures = () => {
             </div>
           ))}
         </div>
+      </div>
+      {/* Bottom center logo */}
+      <div className="absolute left-1/2 bottom-12 transform -translate-x-1/2 z-30 w-16 h-[46px] sm:w-20 sm:h-[58px] md:w-24 md:h-[70px] flex items-end justify-center">
+        <Image
+          src="/Travelon Logo White.png"
+          alt="Inverted Travelon Logo"
+          width={40}
+          height={58} // Preserves aspect ratio
+          className="object-contain"
+          priority
+        />
       </div>
     </section>
   );

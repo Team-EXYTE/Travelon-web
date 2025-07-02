@@ -1,5 +1,6 @@
 import React from "react";
 import { Globe, Users, Calendar } from "lucide-react";
+import Image from "next/image";
 
 const About = () => {
   return (
@@ -59,6 +60,17 @@ const About = () => {
             </p>
           </div>
         </div>
+      </div>
+      {/* Bottom center logo */}
+      <div className="absolute left-1/2 bottom-12 transform -translate-x-1/2 z-30 w-16 h-[46px] sm:w-20 sm:h-[58px] md:w-24 md:h-[70px] flex items-end justify-center">
+        <Image
+          src="/Travelon Logo White.png"
+          alt="Inverted Travelon Logo"
+          width={40}
+          height={58} // Preserves aspect ratio
+          className="object-contain"
+          priority
+        />
       </div>
     </section>
   );
