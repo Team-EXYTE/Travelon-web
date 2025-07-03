@@ -1,11 +1,23 @@
 import React from "react";
 import { ArrowRight, Compass, Calendar } from "lucide-react";
+import Image from "next/image";
 
 const JoinSection = () => {
   return (
-    <section className="pt-12 bg-white min-h-screen flex items-center ">
+    <section className="pt-12 bg-white min-h-screen flex items-center relative">
+      {/* Top center black logo */}
+      <div className="absolute left-1/2 top-8 transform -translate-x-1/2 z-30 w-16 h-[46px] sm:w-20 sm:h-[58px] md:w-24 md:h-[70px] flex items-end justify-center">
+        <Image
+          src="/Travelon Logo Black.png"
+          alt="Travelon Logo Black"
+          width={40}
+          height={58} // Preserves aspect ratio
+          className="object-contain"
+          priority
+        />
+      </div>
       <div className="max-w-7xl mx-auto px-4 md:px-6 w-full">
-        <div className="text-center mb-8 md:mb-12">
+        <div className="text-center mb-8 md:mb-12 mt-24">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 md:mb-6">
             Join Our Community
           </h2>

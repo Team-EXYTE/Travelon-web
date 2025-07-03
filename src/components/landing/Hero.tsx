@@ -95,12 +95,31 @@ const Hero = () => {
       {/* Main content */}
       <div className="max-w-6xl mx-auto text-center relative z-20">
         <div className="mb-4 md:mb-6">
+          {/* MODIFIED: Replaced mobile MapPin SVG with Image */}
+          <Image
+            src="/Travelon Text Black.png"
+            alt="Travelon Text Logo"
+            width={120}
+            height={20} /* Adjusted for a wide logo aspect ratio */
+            className="mx-auto mb-3 md:hidden"
+          />
+          {/* Desktop: show logo, preserve aspect ratio (width: 48, height: 70) */}
+          <Image
+            src="/Travelon Text Black.png"
+            alt="Travelon Text Logo"
+            width={180}
+            height={30} /* Adjusted for a wide logo aspect ratio */
+            className="mx-auto mb-4 hidden md:block"
+          />
+        </div>
+
+        {/* <div className="mb-4 md:mb-6">
           <MapPin size={36} className="mx-auto mb-3 text-black md:hidden" />
           <MapPin
             size={48}
             className="mx-auto mb-4 text-black hidden md:block"
           />
-        </div>
+        </div> */}
 
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-black mb-4 md:mb-6 leading-tight">
           Connect.

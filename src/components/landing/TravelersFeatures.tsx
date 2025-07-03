@@ -1,5 +1,6 @@
 import React from "react";
 import { Search, Heart, Shield, MessageCircle } from "lucide-react";
+import Image from "next/image";
 
 const TravelersFeatures = () => {
   const features = [
@@ -30,7 +31,7 @@ const TravelersFeatures = () => {
   ];
 
   return (
-    <section className="py-8 md:py-12 min-h-screen bg-white">
+    <section className="py-8 md:py-12 min-h-screen bg-white relative">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 md:mb-6">
@@ -68,6 +69,17 @@ const TravelersFeatures = () => {
             </div>
           ))}
         </div>
+      </div>
+      {/* Bottom center black logo */}
+      <div className="absolute left-1/2 bottom-12 transform -translate-x-1/2 z-30 w-16 h-[46px] sm:w-20 sm:h-[58px] md:w-24 md:h-[70px] flex items-end justify-center">
+        <Image
+          src="/Travelon Logo Black.png"
+          alt="Travelon Logo Black"
+          width={40}
+          height={58} // Preserves aspect ratio
+          className="object-contain"
+          priority
+        />
       </div>
     </section>
   );
