@@ -18,6 +18,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+// Add Firebase imports
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/db/firebaseClient";
 
 const SignupPage = () => {
   const router = useRouter();
@@ -80,15 +83,79 @@ const SignupPage = () => {
     setIsLoading(true);
     setError("");
 
-    // Just console log for now
-    console.log("Signup attempt:", formData);
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      
+      // 2. Get the user ID
+      const user = userCredential.user;
+      const uid = user.uid;
+      
+      // 3. Prepare profile data
+      const profileData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        username: formData.username,
+        orgName: formData.orgName,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        district: formData.district,
+        email: formData.email, // Include email as it's useful for profile
+      };
+      
+      // 4. Store profile data in the database via API
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          uid,
+          profileData,
+        }),
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to complete signup process');
+      }
+      
+      // 5. Redirect to login page with success message
+      router.push('/auth/login?registered=success');
+      
+    } catch (error: any) {
+      console.log('Signup error:', error);
+      
+      // Handle specific Firebase Auth errors with detailed messages
+      let errorMessage = 'An error occurred during signup. Please try again.';
+      
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'This email is already registered. Please use a different email or login instead.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email address. Please check your email and try again.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password is too weak. Please use at least 6 characters.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your internet connection and try again.';
+            break;
+          default:
+            errorMessage = `Error: ${error.message || 'Unknown error occurred'}`;
+        }
+      }
+      
+      setError(errorMessage);
+    } finally {
       setIsLoading(false);
-      // For demo, show success then redirect
-      router.push("/");
-    }, 1500);
+    }
   };
 
   // Helper function to get phase title
