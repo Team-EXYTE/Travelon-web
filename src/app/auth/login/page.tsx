@@ -1,19 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowRight, User, Lock, MapPin, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ArrowRight, Lock, MapPin, X, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/db/firebaseClient";
 
 const LoginPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Check for registration success message
+  useEffect(() => {
+    const registered = searchParams.get("registered");
+    if (registered === "success") {
+      setSuccessMessage("Account created successfully! Please login.");
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,16 +39,71 @@ const LoginPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
+    setSuccessMessage("");
 
-    // Just console log for now
-    console.log("Login attempt:", formData);
+    try {
+      // 1. Sign in with Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // For demo, show success then redirect
+      // 2. Get ID token
+      const idToken = await user.getIdToken();
+
+      // 3. Send to login API (sets custom claims but no cookie)
+      const loginResponse = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await loginResponse.json();
+
+      if (!loginResponse.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+
+      // 4. Force token refresh to get claims
+      await user.getIdToken(true);
+
+      // 5. Get fresh token with claims
+      const newToken = await user.getIdToken();
+
+      // 6. Send to session API to create cookie with claims
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: newToken }),
+      });
+
+      // 7. Redirect to dashboard
       router.push("/");
-    }, 1500);
+    } catch (error: any) {
+      console.error("Login error:", error);
+
+      // Handle specific Firebase Auth errors
+      if (error.code) {
+        switch (error.code) {
+          case "auth/invalid-credential":
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            setError("Invalid email or password");
+            break;
+          case "auth/too-many-requests":
+            setError("Too many failed login attempts. Please try again later.");
+            break;
+          default:
+            setError(`Login failed: ${error.message}`);
+        }
+      } else {
+        setError(error.message || "An unexpected error occurred");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -129,32 +196,46 @@ const LoginPage = () => {
           </p>
         </div>
 
+        {/* Success message */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 relative">
+            <span className="block sm:inline">{successMessage}</span>
+            <button
+              type="button"
+              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+              onClick={() => setSuccessMessage("")}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Login form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Username field */}
+          {/* Email field (changed from username) */}
           <div className="group">
             <label
-              htmlFor="username"
+              htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Username
+              Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User
+                <Mail
                   size={18}
                   className="text-gray-400 group-focus-within:text-black transition-colors"
                 />
               </div>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                value={formData.username}
+                value={formData.email}
                 onChange={handleChange}
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none"
-                placeholder="Enter your username"
+                placeholder="Enter your email"
               />
             </div>
           </div>
