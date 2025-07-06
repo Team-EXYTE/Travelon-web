@@ -14,6 +14,7 @@ import {
   MapPin,
   BarChart,
   Plus,
+  HelpCircle,
 } from "lucide-react";
 
 export default function OrganizerLayout({
@@ -179,6 +180,25 @@ export default function OrganizerLayout({
                     }`}
                   />
                   Analytics
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/organizer/support"
+                  className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    pathname === "/organizer/settings"
+                      ? "bg-white text-black"
+                      : "text-white hover:bg-gray-800"
+                  }`}
+                >
+                  <HelpCircle
+                    className={`h-5 w-5 mr-3 ${
+                      pathname === "/organizer/support"
+                        ? "text-white"
+                        : "text-white"
+                    }`}
+                  />
+                  Help & Support
                 </Link>
               </li>
               <li>
