@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // Add useRouter import
 import Link from "next/link";
 import {
   Menu,
@@ -23,10 +23,33 @@ export default function OrganizerLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter(); // Initialize router for redirection
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  // Handle sign out
+  const handleSignOut = async () => {
+    try {
+      // Call logout API to clear session cookie server-side
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        // Redirect to login page after successful logout
+        router.push("/auth/login");
+      } else {
+        console.error("Failed to log out");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-black/4 lg:pt-20">
@@ -183,10 +206,8 @@ export default function OrganizerLayout({
           {/* Logout button */}
           <div className="p-4 border-t border-gray-800">
             <button
-              onClick={() => {
-                // Handle logout logic here
-              }}
-              className="flex items-center w-full px-4 py-3 text-left text-red-400 rounded-lg hover:bg-gray-800 transition-colors"
+              onClick={handleSignOut}
+              className="flex items-center w-full px-4 py-3 text-left text-red-300 rounded-lg hover:bg-white hover:text-red-700 transition-colors"
             >
               <LogOut className="h-5 w-5 mr-3" />
               Sign Out

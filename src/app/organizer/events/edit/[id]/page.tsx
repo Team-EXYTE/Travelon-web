@@ -28,6 +28,13 @@ import {
 } from "firebase/storage";
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { storage, db } from "@/db/firebaseClient";
+import dynamic from "next/dynamic";
+
+// Dynamic import for the map component (no SSR)
+const LocationMap = dynamic(
+  () => import("@/components/LocationMap"),
+  { ssr: false }
+);
 
 const MAX_IMAGES = 4;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -305,15 +312,15 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle location selection
-  const handleLocationSelect = () => {
-    // Simulate selecting a location - in a real app you'd integrate with a map
-    setFormData((prev) => ({
-      ...prev,
-      latitude: 6.9271,
-      longitude: 79.8612,
-    }));
-  };
+//   // Handle location selection
+//   const handleLocationSelect = () => {
+//     // Simulate selecting a location - in a real app you'd integrate with a map
+//     setFormData((prev) => ({
+//       ...prev,
+//       latitude: 6.9271,
+//       longitude: 79.8612,
+//     }));
+//   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -681,30 +688,52 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
 
             {/* Map Placeholder */}
             <div className="rounded-lg overflow-hidden border border-gray-300">
-              <div className="bg-gray-100 h-48 w-full flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-10 w-10 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">
-                    Map will be displayed here
-                  </p>
-                  <button
-                    type="button"
-                    className="mt-2 px-3 py-1 text-sm bg-black text-white rounded-md hover:bg-gray-800"
-                    onClick={handleLocationSelect}
-                  >
-                    Update Location
-                  </button>
-                </div>
+              <div className="h-64 w-full">
+                <LocationMap
+                  latitude={formData.latitude}
+                  longitude={formData.longitude}
+                  onLocationChange={(lat, lng) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      latitude: lat,
+                      longitude: lng,
+                    }));
+                  }}
+                />
               </div>
-              <div className="py-2 px-3 bg-gray-50 text-xs text-gray-500">
+              <div className="py-2 px-3 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
                 {formData.latitude !== 0 && formData.longitude !== 0 ? (
                   <p>
                     Selected coordinates: {formData.latitude.toFixed(6)},{" "}
                     {formData.longitude.toFixed(6)}
                   </p>
                 ) : (
-                  <p>Click on the map to select the exact location</p>
+                  <p>
+                    Click on the map or drag the marker to select the exact
+                    location
+                  </p>
                 )}
+                <button
+                  type="button"
+                  className="px-2 py-2 text-xs bg-black text-white rounded hover:bg-gray-300 hover:text-black "
+                  onClick={() => {
+                    navigator.geolocation.getCurrentPosition(
+                      (position) => {
+                        const { latitude, longitude } = position.coords;
+                        setFormData((prev) => ({
+                          ...prev,
+                          latitude,
+                          longitude,
+                        }));
+                      },
+                      (error) => {
+                        console.error("Error getting user location:", error);
+                      }
+                    );
+                  }}
+                >
+                  Use My Location
+                </button>
               </div>
             </div>
 

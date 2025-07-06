@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import dynamic from 'next/dynamic';
 
 interface EventData {
   id: string;
@@ -31,6 +32,12 @@ interface EventData {
   createdAt: string;
   organizerId: string;
 }
+
+// Dynamic import for the map component (no SSR)
+const StaticLocationMap = dynamic(
+  () => import('@/components/StaticLocationMap'),
+  { ssr: false }
+);
 
 export default function ViewEventPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -268,11 +275,12 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
                 </div>
                 
                 {/* Here you could add a map component using the coordinates */}
-                <div className="mt-4 bg-gray-100 rounded-lg h-[200px] flex items-center justify-center">
-                  <p className="text-gray-500">Map view would be displayed here using coordinates</p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    ({event.latitude}, {event.longitude})
-                  </p>
+                <div className="mt-4 rounded-lg h-[300px] overflow-hidden border border-gray-200">
+                  <StaticLocationMap
+                    latitude={event.latitude}
+                    longitude={event.longitude}
+                    popupText={event.location}
+                  />
                 </div>
               </div>
             </div>
