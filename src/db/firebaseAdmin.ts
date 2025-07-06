@@ -73,3 +73,10 @@ export const getAdminDB = () => {
   }
   return admin.firestore();
 };
+
+export const getAdminStorage = () => {
+  if (!firebaseAdminInitialized && admin.apps.length === 0) {
+    throw new Error("Firebase Admin not initialized. Call initAdmin() first.");
+  }
+  return admin.storage().bucket();
+};

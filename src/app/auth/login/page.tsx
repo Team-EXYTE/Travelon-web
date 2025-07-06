@@ -54,7 +54,7 @@ const LoginPage = () => {
       const idToken = await user.getIdToken();
 
       // 3. Send to login API (sets custom claims but no cookie)
-      const loginResponse = await fetch("/api/login", {
+      const loginResponse = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
