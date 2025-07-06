@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // For debugging: Check if role is in the decoded token
     console.log("Token claims:", decodedToken);
     
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, role: decodedToken.role || 'user' });
   } catch (error: any) {
     console.error("Session refresh error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

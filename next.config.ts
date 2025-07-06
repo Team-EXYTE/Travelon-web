@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Add the webpack configuration for Leaflet
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.(png|jpg|gif)$/i,
+      use: [
+        {
+          loader: 'url-loader',
+          options: {
+            limit: 8192,
+          },
+        },
+      ],
+    });
+    return config;
+  },
 };
 
 export default nextConfig;

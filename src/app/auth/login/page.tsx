@@ -73,14 +73,27 @@ const LoginPage = () => {
       const newToken = await user.getIdToken();
 
       // 6. Send to session API to create cookie with claims
-      await fetch("/api/auth/session", {
+      const sessionResponse = await fetch("/api/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken: newToken }),
       });
 
       // 7. Redirect to dashboard
-      router.push("/");
+      if(sessionResponse.ok){
+        const sessionData = await sessionResponse.json();
+        if (sessionData.role) {
+          setSuccessMessage("Login successful! Redirecting...");
+          setTimeout(() => {
+            setIsLoading(false);
+            router.push("/" + sessionData.role + "/profile");
+          }, 1000); 
+        }
+        else{
+          router.push("/");
+        }
+      }
+
     } catch (error: any) {
       console.error("Login error:", error);
 
