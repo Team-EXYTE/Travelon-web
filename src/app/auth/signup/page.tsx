@@ -108,7 +108,7 @@ const SignupPage = () => {
       };
       
       // 4. Store profile data in the database via API
-      const response = await fetch('/api/signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
