@@ -45,7 +45,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
       icon: UserCircle,
       href: "/admin/customers",
       isActive: pathname === "/admin/customers"
-    }
+    },
+    {
+      title: "Create Admins",
+      icon: Users,
+      href: "/admin/admins",
+      isActive: pathname === "/admin/admins"
+    },
+
   ];
 
   const utilityNavItems = [
