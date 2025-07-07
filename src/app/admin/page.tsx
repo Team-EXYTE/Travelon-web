@@ -1,5 +1,6 @@
 import React from "react";
 import { Users, Calendar, UserCircle, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const statCards = [
@@ -7,6 +8,7 @@ export default function AdminDashboard() {
     { title: "Active Events", value: "47", icon: Calendar, change: "+8%" },
     { title: "Total Customers", value: "184", icon: UserCircle, change: "+24%" },
     { title: "Monthly Revenue", value: "$8,942", icon: TrendingUp, change: "+18%" }
+    
   ];
 
   return (
@@ -55,7 +57,9 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-          <button className="mt-4 text-sm text-black font-medium hover:underline">View all events</button>
+            <Link href="/admin/events" className="mt-4 text-sm text-black font-medium hover:underline">
+            View all events
+            </Link>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -76,7 +80,9 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-          <button className="mt-4 text-sm text-black font-medium hover:underline">View all customers</button>
+            <Link href="/admin/customers" className="mt-4 text-sm text-black font-medium hover:underline">
+            View all customers
+            </Link>
         </div>
       </div>
     </div>

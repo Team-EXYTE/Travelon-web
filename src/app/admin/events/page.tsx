@@ -245,7 +245,7 @@ export default function EventsPage() {
       {deleteConfirmation.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div 
-            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl"
+            className="bg-white rounded-lg max-w-md w-full overflow-hidden shadow-xl" // Removed p-6, added overflow-hidden
             onClick={(e) => e.stopPropagation()}
           >
             {/* Event image at the top of the modal */}
@@ -256,7 +256,7 @@ export default function EventsPage() {
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+              {/* Removed the black overlay div */}
             </div>
             
             <div className="p-6">
