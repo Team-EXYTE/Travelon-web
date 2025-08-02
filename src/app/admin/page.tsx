@@ -6,7 +6,7 @@ export default function AdminDashboard() {
   const statCards = [
     { title: "Total Organizers", value: "24", icon: Users, change: "+12%" },
     { title: "Active Events", value: "47", icon: Calendar, change: "+8%" },
-    { title: "Total Customers", value: "184", icon: UserCircle, change: "+24%" },
+    { title: "Total Travellers", value: "184", icon: UserCircle, change: "+24%" },
     { title: "Monthly Revenue", value: "$8,942", icon: TrendingUp, change: "+18%" }
     
   ];
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold text-black mb-4">New Customers</h2>
+          <h2 className="text-xl font-bold text-black mb-4">New Travellers</h2>
           <div className="space-y-4">
             {[1, 2, 3].map((_, index) => (
               <div key={index} className="flex items-center gap-4 pb-4 border-b border-gray-100">
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
             ))}
           </div>
             <Link href="/admin/customers" className="mt-4 text-sm text-black font-medium hover:underline">
-            View all customers
+            View all Travellers
             </Link>
         </div>
       </div>

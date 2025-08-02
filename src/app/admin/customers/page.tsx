@@ -114,8 +114,8 @@ export default function CustomersPage() {
     <div onClick={closeDropdown}>
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-black">Customers</h1>
-          <p className="text-gray-600 mt-1">Manage customers registered on the platform</p>
+          <h1 className="text-3xl font-bold text-black">Travellers</h1>
+          <p className="text-gray-600 mt-1">Manage travellers registered on the platform</p>
         </div>
         {/* <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
           <Plus size={18} />
@@ -154,7 +154,7 @@ export default function CustomersPage() {
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Customer
+                Traveller
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
