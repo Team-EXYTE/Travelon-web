@@ -1,68 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import {  Search, MoreHorizontal, Edit, Trash2, MapPin, Users, AlertTriangle } from "lucide-react";
+import { Search, MoreHorizontal, Trash2, MapPin, Users, AlertTriangle, Check, X } from "lucide-react";
+// , Edit
 import Image from "next/image";
+import { useEvents } from "@/hooks/useEvents";
 // Calendar, Plus,
 export default function EventsPage() {
-  // Sample event data with photos
-  const [events, setEvents] = useState([
-    { 
-      id: 1, 
-      title: "Kandy Cultural Tour", 
-      organizer: "Adventure Lanka Tours", 
-      location: "Kandy, Sri Lanka", 
-      date: "2025-07-15", 
-      participants: 28, 
-      status: "Active",
-      photo: "/Sigiriya.jpg" // Example local image path
-    },
-    { 
-      id: 2, 
-      title: "Colombo City Walk", 
-      organizer: "Colombo Experiences", 
-      location: "Colombo, Sri Lanka", 
-      date: "2025-07-20", 
-      participants: 12, 
-      status: "Active",
-      photo: "/Sigiriya.jpg"
-     },
-    { 
-      id: 3, 
-      title: "Tea Plantation Visit", 
-      organizer: "Sri Lanka Journeys", 
-      location: "Nuwara Eliya, Sri Lanka", 
-      date: "2025-08-05", 
-      participants: 8, 
-      status: "Upcoming",
-      photo: "/Sigiriya.jpg"
-    },
-    { 
-      id: 4, 
-      title: "Sigiriya Rock Fortress Trek", 
-      organizer: "Adventure Lanka Tours", 
-      location: "Sigiriya, Sri Lanka", 
-      date: "2025-08-12", 
-      participants: 15, 
-      status: "Upcoming",
-      photo: "/Sigiriya.jpg"
-    },
-    { 
-      id: 5, 
-      title: "Galle Fort Exploration", 
-      organizer: "Beach Paradise Tours", 
-      location: "Galle, Sri Lanka", 
-      date: "2025-06-20", 
-      participants: 22, 
-      status: "Completed",
-      photo: "/Sigiriya.jpg"
-    },
-  ]);
-
+  const { data, loading, error, updateEventStatus, deleteEvent: deleteEventFromDB } = useEvents();
+  
   // State for delete confirmation modal
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
-    eventId: number | null;
+    eventId: string | null;
     eventTitle: string;
     eventPhoto: string;
   }>({
@@ -72,8 +22,54 @@ export default function EventsPage() {
     eventPhoto: ""
   });
 
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  
+  // State for event details modal
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">Loading events...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!data || !data.events) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">No events found</div>
+      </div>
+    );
+  }
+
+  const events = data.events;
+
+  // Toggle dropdown visibility
+  const toggleDropdown = (eventId: string) => {
+    if (openDropdownId === eventId) {
+      setOpenDropdownId(null);
+    } else {
+      setOpenDropdownId(eventId);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  const closeDropdown = () => {
+    setOpenDropdownId(null);
+  };
+
   // Open delete confirmation
-  const openDeleteConfirmation = (eventId: number, eventTitle: string, eventPhoto: string) => {
+  const openDeleteConfirmation = (eventId: string, eventTitle: string, eventPhoto: string) => {
     setDeleteConfirmation({
       isOpen: true,
       eventId,
@@ -93,15 +89,41 @@ export default function EventsPage() {
   };
 
   // Delete event
-  const deleteEvent = () => {
+  const handleDeleteEvent = async () => {
     if (deleteConfirmation.eventId) {
-      setEvents(events.filter(event => event.id !== deleteConfirmation.eventId));
-      closeDeleteConfirmation();
+      try {
+        await deleteEventFromDB(deleteConfirmation.eventId);
+        closeDeleteConfirmation();
+      } catch (error: any) {
+        alert(error.message);
+      }
     }
   };
 
+  // Update event status
+  const handleStatusUpdate = async (eventId: string, isEnded: boolean) => {
+    try {
+      await updateEventStatus(eventId, isEnded);
+      setOpenDropdownId(null);
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  // Open event details modal
+  const openEventModal = (event: any) => {
+    setSelectedEvent(event);
+    setIsEventModalOpen(true);
+  };
+
+  // Close event details modal
+  const closeEventModal = () => {
+    setSelectedEvent(null);
+    setIsEventModalOpen(false);
+  };
+
   return (
-    <div>
+    <div onClick={closeDropdown}>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-black">Events</h1>
@@ -165,12 +187,12 @@ export default function EventsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {events.map((event) => (
-              <tr key={event.id} className="hover:bg-gray-50">
+              <tr key={event.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openEventModal(event)}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-12 w-12 rounded-md overflow-hidden">
                       <Image 
-                        src={event.photo} 
+                        src={event.images && event.images.length > 0 ? event.images[0] : "/Sigiriya.jpg"} 
                         alt={event.title}
                         width={48}
                         height={48}
@@ -179,21 +201,29 @@ export default function EventsPage() {
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">{event.title}</div>
-                      <div className="text-xs text-gray-500 flex items-center mt-1">
-                        <MapPin size={12} className="mr-1" /> {event.location}
-                      </div>
+                        <div className="text-xs text-gray-500 flex items-start mt-1">
+                          <MapPin size={12} className="mr-1 flex-shrink-0" /> 
+                          <span className="inline-block max-w-[120px]">
+                            {event.location 
+                              ? event.location.length > 40 
+                                ? event.location.substring(0, 40) + '...' 
+                                : event.location
+                              : ''}
+                          </span>
+                        </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{event.organizer}</div>
+                  <div className="text-sm text-gray-900">{event.organizerName}</div>
+                  <div className="text-xs text-gray-500">{event.category}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{new Date(event.date).toLocaleDateString()}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900 flex items-center">
-                    <Users size={14} className="mr-1" /> {event.participants}
+                    <Users size={14} className="mr-1" /> {event.participantsCount}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -205,19 +235,58 @@ export default function EventsPage() {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end gap-2">
-                    <button className="p-1 text-gray-500 hover:text-black">
+                  <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                    {/* <button className="p-1 text-gray-500 hover:text-black">
                       <Edit size={16} />
-                    </button>
+                    </button> */}
                     <button 
                       className="p-1 text-gray-500 hover:text-red-500"
-                      onClick={() => openDeleteConfirmation(event.id, event.title, event.photo)}
+                      onClick={() => openDeleteConfirmation(event.id, event.title, event.images && event.images.length > 0 ? event.images[0] : "/Sigiriya.jpg")}
                     >
                       <Trash2 size={16} />
                     </button>
-                    <button className="p-1 text-gray-500 hover:text-black">
-                      <MoreHorizontal size={16} />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        className="p-1 text-gray-500 hover:text-black"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDropdown(event.id);
+                        }}
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                      
+                      {/* Dropdown menu */}
+                      {openDropdownId === event.id && (
+                        <div 
+                          className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="py-1">
+                            {!event.isEnded ? (
+                              <button
+                                onClick={() => handleStatusUpdate(event.id, true)}
+                                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <X size={16} className="mr-2 text-red-500" />
+                                Mark as Ended
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleStatusUpdate(event.id, false)}
+                                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <Check size={16} className="mr-2 text-green-500" />
+                                Mark as Active
+                              </button>
+                            )}
+                            <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -275,10 +344,197 @@ export default function EventsPage() {
                   Cancel
                 </button>
                 <button
-                  onClick={deleteEvent}
+                  onClick={handleDeleteEvent}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Event Details Modal */}
+      {isEventModalOpen && selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={closeEventModal}>
+          <div 
+            className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Event Images */}
+            {selectedEvent.images && selectedEvent.images.length > 0 ? (
+              <div className="relative w-full h-64 rounded-t-lg overflow-hidden bg-gray-200">
+                <img 
+                  src={selectedEvent.images[0] || "/Sigiriya.jpg"} 
+                  alt={selectedEvent.title || "Event image"}
+                  className="w-full h-full object-cover"
+                  style={{ imageRendering: 'auto' }}
+                  loading="eager"
+                  onError={(e) => {
+                    console.log("Image failed to load:", selectedEvent.images[0]);
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/Sigiriya.jpg";
+                  }}
+                  onLoad={() => {
+                    console.log("Image loaded successfully:", selectedEvent.images[0]);
+                  }}
+                />
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={closeEventModal}
+                    className="bg-white rounded-full p-2 hover:bg-gray-100 shadow-lg"
+                  >
+                    <X size={20} className="text-gray-600" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative w-full h-64 rounded-t-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                <div className="text-gray-500">No image available</div>
+                <div className="absolute top-4 right-4">
+                  <button
+                    onClick={closeEventModal}
+                    className="bg-white rounded-full p-2 hover:bg-gray-100 shadow-lg"
+                  >
+                    <X size={20} className="text-gray-600" />
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            <div className="p-6">
+              {/* Event Header */}
+              <div className="mb-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-black mb-2">{selectedEvent.title}</h2>
+                    <div className="flex items-center text-gray-600 mb-2">
+                      <MapPin size={16} className="mr-2" />
+                      <span>{selectedEvent.location}</span>
+                    </div>
+                    <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full 
+                      ${selectedEvent.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                      selectedEvent.status === 'Upcoming' ? 'bg-blue-100 text-blue-800' : 
+                      'bg-gray-100 text-gray-800'}`}>
+                      {selectedEvent.status}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-black">LKR {selectedEvent.price}</div>
+                    <div className="text-sm text-gray-500">per person</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-black mb-3">Event Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-gray-600 text-sm">Date & Time:</span>
+                      <p className="font-medium">{new Date(selectedEvent.date).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Category:</span>
+                      <p className="font-medium">{selectedEvent.category}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Organizer:</span>
+                      <p className="font-medium">{selectedEvent.organizerName}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Participants:</span>
+                      <p className="font-medium flex items-center">
+                        <Users size={16} className="mr-1" /> {selectedEvent.participantsCount}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-black mb-3">Admin Information</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-gray-600 text-sm">Event ID:</span>
+                      <p className="font-medium font-mono text-xs">{selectedEvent.id}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Created:</span>
+                      <p className="font-medium">{new Date(selectedEvent.createdAt).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Last Updated:</span>
+                      <p className="font-medium">{new Date(selectedEvent.updatedAt).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 text-sm">Status:</span>
+                      <p className="font-medium">{selectedEvent.isEnded ? 'Event Ended' : 'Active Event'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Description */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-black mb-3">Description</h3>
+                <p className="text-gray-700 leading-relaxed">{selectedEvent.description}</p>
+              </div>
+
+              {/* Event Images Gallery */}
+              {selectedEvent.images && selectedEvent.images.length > 1 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-black mb-3">Gallery</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {selectedEvent.images.map((image: string, index: number) => (
+                      <div key={index} className="relative h-32 rounded-lg overflow-hidden">
+                        <img 
+                          src={image} 
+                          alt={`${selectedEvent.title} - Image ${index + 1}`}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                          style={{ imageRendering: 'auto' }}
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Location Details */}
+              {selectedEvent.latitude && selectedEvent.longitude && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-black mb-3">Location</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-2">Coordinates:</p>
+                    <p className="font-mono text-sm">
+                      Lat: {selectedEvent.latitude}, Lng: {selectedEvent.longitude}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={closeEventModal}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    openDeleteConfirmation(
+                      selectedEvent.id, 
+                      selectedEvent.title, 
+                      selectedEvent.images && selectedEvent.images.length > 0 ? selectedEvent.images[0] : "/Sigiriya.jpg"
+                    );
+                    closeEventModal();
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none"
+                >
+                  Delete Event
                 </button>
               </div>
             </div>
