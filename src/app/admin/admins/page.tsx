@@ -56,25 +56,27 @@ const [admins, setAdmins] = useState([
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
 
   // State for add/edit admin modal - removed role field
-  const [adminModal, setAdminModal] = useState<{
+    const [adminModal, setAdminModal] = useState<{
     isOpen: boolean;
     isEdit: boolean;
     admin: {
-      id: number | null;
-      name: string;
-      email: string;
-      status: string;
+        id: number | null;
+        name: string;
+        email: string;
+        status: string;
+        password: string;
     }
-  }>({
+    }>({
     isOpen: false,
     isEdit: false,
     admin: {
-      id: null,
-      name: "",
-      email: "",
-      status: "Active"
+        id: null,
+        name: "",
+        email: "",
+        status: "Active",
+        password: ""
     }
-  });
+    });
 
   // Toggle dropdown visibility
   const toggleDropdown = (adminId: number) => {
@@ -125,32 +127,35 @@ const [admins, setAdmins] = useState([
   };
 
   // Open add admin modal
-  const openAddAdminModal = () => {
+    const openAddAdminModal = () => {
     setAdminModal({
-      isOpen: true,
-      isEdit: false,
-      admin: {
+        isOpen: true,
+        isEdit: false,
+        admin: {
         id: null,
         name: "",
         email: "",
-        status: "Active"
-      }
+        status: "Active",
+        password: ""
+        }
     });
-  };
+    };
 
   // Open edit admin modal
-  const openEditAdminModal = (admin: any) => {
+
+    const openEditAdminModal = (admin: any) => {
     setAdminModal({
-      isOpen: true,
-      isEdit: true,
-      admin: {
+        isOpen: true,
+        isEdit: true,
+        admin: {
         id: admin.id,
         name: admin.name,
         email: admin.email,
-        status: admin.status
-      }
+        status: admin.status,
+        password: "" // Empty for edit mode since we don't want to display the current password
+        }
     });
-  };
+    };
 
   // Close admin modal
   const closeAdminModal = () => {
@@ -173,32 +178,33 @@ const [admins, setAdmins] = useState([
   };
 
   // Save admin (add or edit)
-  const saveAdmin = () => {
+    const saveAdmin = () => {
     const { admin, isEdit } = adminModal;
     
     if (isEdit && admin.id) {
-      // Update existing admin
-      setAdmins(admins.map(a => 
+        // Update existing admin - don't update password if it's empty
+        setAdmins(admins.map(a => 
         a.id === admin.id ? { 
-          ...a, 
-          name: admin.name,
-          email: admin.email,
-          status: admin.status
+            ...a, 
+            name: admin.name,
+            email: admin.email,
+            status: admin.status,
+            ...(admin.password ? { password: admin.password } : {}) // Only update password if provided
         } : a
-      ));
+        ));
     } else {
-      // Add new admin
-      const newAdmin = {
+        // Add new admin
+        const newAdmin = {
         ...admin,
         id: Math.max(...admins.map(a => a.id)) + 1,
         joinDate: new Date().toISOString().split('T')[0],
         avatar: "/avatars/default.jpg" // Default avatar
-      };
-      setAdmins([...admins, newAdmin as any]);
+        };
+        setAdmins([...admins, newAdmin as any]);
     }
     
     closeAdminModal();
-  };
+    };
 
   return (
     <div onClick={closeDropdown}>
@@ -463,14 +469,30 @@ const [admins, setAdmins] = useState([
                   <option value="Inactive">Inactive</option>
                 </select>
               </div>
+            
+            <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                </label>
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={adminModal.admin.password}
+                    onChange={handleAdminInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none"
+                    placeholder="Enter password"
+                    required={!adminModal.isEdit}
+                />
+            </div>
               
-              {!adminModal.isEdit && (
+              {/* {!adminModal.isEdit && (
                 <div className="bg-yellow-50 p-3 rounded-lg">
                   <p className="text-sm text-yellow-800">
                     An email will be sent to the administrator with instructions to set their password.
                   </p>
                 </div>
-              )}
+              )} */}
             </div>
             
             <div className="flex gap-3 justify-end mt-6">

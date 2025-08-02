@@ -41,7 +41,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
       isActive: pathname === "/admin/events"
     },
     {
-      title: "Customers",
+      title: "Travellers",
       icon: UserCircle,
       href: "/admin/customers",
       isActive: pathname === "/admin/customers"
