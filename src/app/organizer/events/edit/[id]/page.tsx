@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   CheckCircle,
   ArrowLeft,
+  Users,
 } from "lucide-react";
 import {
   getDownloadURL,
@@ -31,10 +32,9 @@ import { storage, db } from "@/db/firebaseClient";
 import dynamic from "next/dynamic";
 
 // Dynamic import for the map component (no SSR)
-const LocationMap = dynamic(
-  () => import("@/components/LocationMap"),
-  { ssr: false }
-);
+const LocationMap = dynamic(() => import("@/components/LocationMap"), {
+  ssr: false,
+});
 
 const MAX_IMAGES = 4;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -67,6 +67,7 @@ interface FormData {
   images: string[]; // URLs of existing images
   newImages: File[]; // New images to upload
   imagesToDelete: string[]; // URLs of images to delete
+  maxParticipants: string;
 }
 
 interface ImagePreview {
@@ -101,6 +102,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     images: [],
     newImages: [],
     imagesToDelete: [],
+    maxParticipants: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -142,6 +144,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           images: event.images || [],
           newImages: [],
           imagesToDelete: [],
+          maxParticipants: event.maxParticipants || "",
         });
 
         // Create previews for existing images
@@ -308,19 +311,31 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
       newErrors.images = "At least one image is required";
     }
 
+    // Add this to your validateForm function
+    if (formData.maxParticipants) {
+      // Only validate if something is entered (empty is valid for unlimited)
+      if (isNaN(parseInt(formData.maxParticipants))) {
+        newErrors.maxParticipants =
+          "Maximum participants must be a valid number";
+      } else if (parseInt(formData.maxParticipants) <= 0) {
+        newErrors.maxParticipants =
+          "Maximum participants must be greater than 0";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-//   // Handle location selection
-//   const handleLocationSelect = () => {
-//     // Simulate selecting a location - in a real app you'd integrate with a map
-//     setFormData((prev) => ({
-//       ...prev,
-//       latitude: 6.9271,
-//       longitude: 79.8612,
-//     }));
-//   };
+  //   // Handle location selection
+  //   const handleLocationSelect = () => {
+  //     // Simulate selecting a location - in a real app you'd integrate with a map
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       latitude: 6.9271,
+  //       longitude: 79.8612,
+  //     }));
+  //   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -414,6 +429,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           ),
           ...newImageUrls,
         ],
+        maxParticipants: formData.maxParticipants,
         updatedAt: serverTimestamp(),
       };
 
@@ -881,6 +897,39 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
               <p className="text-xs text-gray-500">
                 First image will be used as the cover photo for your event.
               </p>
+            </div>
+
+            {/* Max Participants */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="maxParticipants"
+              >
+                Maximum Participants
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Users className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="number"
+                  id="maxParticipants"
+                  name="maxParticipants"
+                  placeholder="Enter maximum number of participants"
+                  className={`pl-10 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                    errors.maxParticipants
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  value={formData.maxParticipants}
+                  onChange={handleChange}
+                />
+              </div>
+              {errors.maxParticipants && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.maxParticipants}
+                </p>
+              )}
             </div>
           </div>
 

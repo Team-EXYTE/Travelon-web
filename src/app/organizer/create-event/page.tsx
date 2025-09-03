@@ -1,6 +1,6 @@
 "use client";
-import dynamic from 'next/dynamic';
-import React, { useState, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
+import React, { useState, useRef } from "react";
 import {
   Calendar,
   Clock,
@@ -16,6 +16,7 @@ import {
   Loader,
   AlertTriangle,
   CheckCircle,
+  UserPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -51,6 +52,7 @@ interface FormData {
   latitude: number;
   longitude: number;
   images: File[];
+  maxParticipants: string; // Using string for form handling, will convert to number when needed
 }
 
 interface ImagePreview {
@@ -79,15 +81,15 @@ const CreateEventPage = () => {
     latitude: 0,
     longitude: 0,
     images: [],
+    maxParticipants: "", // Empty string means open to everyone
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Dynamic import with no SSR for the map component (to avoid SSR issues with Leaflet)
-  const LocationMap = dynamic(
-    () => import('@/components/LocationMap'),
-    { ssr: false }
-  );
+  const LocationMap = dynamic(() => import("@/components/LocationMap"), {
+    ssr: false,
+  });
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -186,6 +188,17 @@ const CreateEventPage = () => {
         newErrors.description = "Description is required";
       } else if (formData.description.length < 50) {
         newErrors.description = "Description should be at least 50 characters";
+      }
+
+      if (formData.maxParticipants) {
+        // Only validate if something is entered (empty is valid for unlimited)
+        if (isNaN(parseInt(formData.maxParticipants))) {
+          newErrors.maxParticipants =
+            "Maximum participants must be a valid number";
+        } else if (parseInt(formData.maxParticipants) <= 0) {
+          newErrors.maxParticipants =
+            "Maximum participants must be greater than 0";
+        }
       }
     } else if (currentStep === 2) {
       if (!formData.location.trim()) {
@@ -317,6 +330,9 @@ const CreateEventPage = () => {
         images: imageUrls,
         createdAt: serverTimestamp(),
         organizerId: userId, // Using the securely verified user ID
+        maxParticipants: formData.maxParticipants
+          ? parseInt(formData.maxParticipants)
+          : null,
       };
 
       await addDoc(collection(db, "events"), eventData);
@@ -486,6 +502,42 @@ const CreateEventPage = () => {
                 Minimum 50 characters
               </p>
             </div>
+
+            {/* Max Participants */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="maxParticipants"
+              >
+                Max Participants
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserPlus className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="number"
+                  id="maxParticipants"
+                  name="maxParticipants"
+                  placeholder="Enter max participants"
+                  className={`pl-10 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                    errors.maxParticipants
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  value={formData.maxParticipants}
+                  onChange={handleChange}
+                />
+              </div>
+              {errors.maxParticipants && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.maxParticipants}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Leave blank for no limit
+              </p>
+            </div>
           </div>
         );
 
@@ -532,10 +584,10 @@ const CreateEventPage = () => {
                   latitude={formData.latitude}
                   longitude={formData.longitude}
                   onLocationChange={(lat, lng) => {
-                    setFormData(prev => ({
+                    setFormData((prev) => ({
                       ...prev,
                       latitude: lat,
-                      longitude: lng
+                      longitude: lng,
                     }));
                   }}
                 />
@@ -543,10 +595,14 @@ const CreateEventPage = () => {
               <div className="py-2 px-3 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
                 {formData.latitude !== 0 && formData.longitude !== 0 ? (
                   <p>
-                    Selected coordinates: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+                    Selected coordinates: {formData.latitude.toFixed(6)},{" "}
+                    {formData.longitude.toFixed(6)}
                   </p>
                 ) : (
-                  <p>Click on the map or drag the marker to select the exact location</p>
+                  <p>
+                    Click on the map or drag the marker to select the exact
+                    location
+                  </p>
                 )}
                 <button
                   type="button"
@@ -555,19 +611,19 @@ const CreateEventPage = () => {
                     navigator.geolocation.getCurrentPosition(
                       (position) => {
                         const { latitude, longitude } = position.coords;
-                        setFormData(prev => ({
+                        setFormData((prev) => ({
                           ...prev,
                           latitude,
-                          longitude
+                          longitude,
                         }));
                       },
                       (error) => {
                         console.error("Error getting user location:", error);
                         // Fallback to default location
-                        setFormData(prev => ({
+                        setFormData((prev) => ({
                           ...prev,
                           latitude: 6.9271,
-                          longitude: 79.8612
+                          longitude: 79.8612,
                         }));
                       }
                     );
