@@ -14,8 +14,9 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  Users,
 } from "lucide-react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 interface EventData {
   id: string;
@@ -31,11 +32,12 @@ interface EventData {
   isEnded: boolean;
   createdAt: string;
   organizerId: string;
+  maxParticipants: number | null;
 }
 
 // Dynamic import for the map component (no SSR)
 const StaticLocationMap = dynamic(
-  () => import('@/components/StaticLocationMap'),
+  () => import("@/components/StaticLocationMap"),
   { ssr: false }
 );
 
@@ -45,7 +47,7 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Use React.use() to unwrap params - future-proof approach
   const resolvedParams = use(params);
   const eventId = resolvedParams.id;
@@ -83,7 +85,7 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
 
   const handlePrevImage = () => {
     if (event?.images?.length) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? event.images.length - 1 : prev - 1
       );
     }
@@ -91,7 +93,7 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
 
   const handleNextImage = () => {
     if (event?.images?.length) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === event.images.length - 1 ? 0 : prev + 1
       );
     }
@@ -149,7 +151,9 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
             <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
             <div className="mt-4 sm:mt-0">
               <button
-                onClick={() => router.push(`/organizer/events/edit/${event.id}`)}
+                onClick={() =>
+                  router.push(`/organizer/events/edit/${event.id}`)
+                }
                 className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
               >
                 <Edit size={16} className="mr-2" />
@@ -261,8 +265,10 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
               <div>
                 <h2 className="text-lg font-semibold mb-3">Description</h2>
                 <div className="prose prose-sm max-w-none text-gray-700">
-                  {event.description.split('\n').map((paragraph, idx) => (
-                    <p key={idx} className="mb-4">{paragraph}</p>
+                  {event.description.split("\n").map((paragraph, idx) => (
+                    <p key={idx} className="mb-4">
+                      {paragraph}
+                    </p>
                   ))}
                 </div>
               </div>
@@ -273,7 +279,7 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
                   <MapPin className="h-5 w-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <span>{event.location}</span>
                 </div>
-                
+
                 {/* Here you could add a map component using the coordinates */}
                 <div className="mt-4 rounded-lg h-[300px] overflow-hidden border border-gray-200">
                   <StaticLocationMap
@@ -292,17 +298,23 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
                   <li className="flex items-start">
                     <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Date & Time</p>
-                      <p className="text-sm text-gray-700">{formatDate(event.date)}</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        Date & Time
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        {formatDate(event.date)}
+                      </p>
                     </div>
                   </li>
-                  
+
                   <li className="flex items-start">
                     <DollarSign className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                     <div>
                       <p className="text-sm font-medium text-gray-900">Price</p>
                       <p className="text-sm text-gray-700">
-                        {event.price === "0" ? "Free Entry" : `LKR ${event.price}`}
+                        {event.price === "0"
+                          ? "Free Entry"
+                          : `LKR ${event.price}`}
                       </p>
                     </div>
                   </li>
@@ -310,15 +322,33 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
                   <li className="flex items-start">
                     <Tag className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Category</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        Category
+                      </p>
                       <p className="text-sm text-gray-700">{event.category}</p>
+                    </div>
+                  </li>
+
+                  <li className="flex items-start">
+                    <Users className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        Capacity
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        {event.maxParticipants
+                          ? `Limited to ${event.maxParticipants} participants`
+                          : "Open to everyone"}
+                      </p>
                     </div>
                   </li>
                 </ul>
               </div>
 
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <h2 className="text-sm font-semibold text-gray-700">Additional Information</h2>
+                <h2 className="text-sm font-semibold text-gray-700">
+                  Additional Information
+                </h2>
                 <ul className="mt-3 space-y-2">
                   <li className="flex justify-between text-sm">
                     <span className="text-gray-500">Created</span>
@@ -328,12 +358,18 @@ export default function ViewEventPage({ params }: { params: { id: string } }) {
                   </li>
                   <li className="flex justify-between text-sm">
                     <span className="text-gray-500">Event ID</span>
-                    <span className="text-gray-800 font-mono text-xs">{event.id}</span>
+                    <span className="text-gray-800 font-mono text-xs">
+                      {event.id}
+                    </span>
                   </li>
                   <li className="flex justify-between text-sm">
                     <span className="text-gray-500">Status</span>
-                    <span className={`font-medium ${event.isEnded ? 'text-red-600' : 'text-green-600'}`}>
-                      {event.isEnded ? 'Ended' : 'Active'}
+                    <span
+                      className={`font-medium ${
+                        event.isEnded ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
+                      {event.isEnded ? "Ended" : "Active"}
                     </span>
                   </li>
                 </ul>
