@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, Lock, MapPin, X, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+// import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/db/firebaseClient";
 
 const LoginPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -20,12 +21,12 @@ const LoginPage = () => {
   const [successMessage, setSuccessMessage] = useState("");
 
   // Check for registration success message
-  useEffect(() => {
-    const registered = searchParams.get("registered");
-    if (registered === "success") {
-      setSuccessMessage("Account created successfully! Please login.");
-    }
-  }, [searchParams]);
+  // useEffect(() => {
+  //   const registered = searchParams.get("registered");
+  //   if (registered === "success") {
+  //     setSuccessMessage("Account created successfully! Please login.");
+  //   }
+  // }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
