@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
-        pathname: "/v0/b/**",
+        pathname: "/v0/b/exyte-travelon.firebasestorage.app/o/**",
       },
     ],
   },
