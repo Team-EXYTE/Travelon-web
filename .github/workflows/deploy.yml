@@ -1,0 +1,45 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+        
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ubuntu/Travelon-web
+          echo "Pulling latest code..."
+          git fetch origin release
+          git reset --hard origin/release
+          
+          echo "Installing dependencies..."
+          npm ci
+          
+          echo "Building application..."
+          npm run build
+          
+          echo "Cleaning up dev dependencies..."
+          npm prune --production
+          
+          echo "Restarting service..."
+          pm2 restart travelon || pm2 start npm --name "travelon" -- run start
+          
+          echo "Deployment complete!"
