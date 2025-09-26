@@ -135,7 +135,7 @@ export async function POST(request: Request) {
         {
           success: false,
           error: result.statusDetail || "OTP verification failed",
-          remainingAttempts: 10 - (sessionData.attempts + 1),
+          remainingAttempts: 20 - (sessionData.attempts + 1),
         },
         { status: 400 }
       );

@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       ...profileData,
       role: 'organizer', // Set role explicitly
       phoneNumberVerified: false,
+      subscriptionStatus: 'inactive',
       updatedAt: new Date().toISOString()
     });
     

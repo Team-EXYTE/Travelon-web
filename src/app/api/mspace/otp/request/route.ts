@@ -41,14 +41,26 @@ export async function POST(request: Request) {
       );
     }
 
-    // Clean and validate phone number
-    const cleanPhone = phone.replace(/\D/g, "");
+    // Clean and standardize phone number to 94XXXXXXXXX format
+    let cleanPhone = phone.replace(/\D/g, "");
     if (cleanPhone.length < 9) {
       return NextResponse.json(
         { success: false, error: "Invalid phone number" },
         { status: 400 }
       );
     }
+
+    // Convert to standard 94XXXXXXXXX format
+    if (cleanPhone.startsWith("0")) {
+      // If starts with 0, replace with 94
+      cleanPhone = "94" + cleanPhone.substring(1);
+    } else if (!cleanPhone.startsWith("94")) {
+      // If doesn't start with 94, add it to the last 9 digits
+      cleanPhone = "94" + cleanPhone.substring(Math.max(0, cleanPhone.length - 9));
+    }
+
+    // Format phone number for mSpace API
+    const formattedPhone = `tel:${cleanPhone}`;
 
     // Initialize Firebase
     await initAdmin();
@@ -76,13 +88,6 @@ export async function POST(request: Request) {
     } catch (dbError) {
       console.error("Error checking subscription status:", dbError);
     }
-
-    // Format phone number for mSpace API
-    const formattedPhone = `tel:${
-      cleanPhone.startsWith("94")
-        ? cleanPhone
-        : "94" + cleanPhone.substring(cleanPhone.length - 9)
-    }`;
 
     // Generate a unique reference for this subscription attempt
     const subscriptionId = uuidv4();
