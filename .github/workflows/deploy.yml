@@ -45,7 +45,7 @@ jobs:
     - name: Archive built files
       run: |
         tar -czf travelon-build.tar.gz \
-        package.json package-lock.json node_modules .next public next.config.js
+        package.json package-lock.json node_modules .next public next.config.ts
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.10
@@ -73,7 +73,7 @@ jobs:
           pm2 stop travelon || true
 
           echo "Cleaning old files..."
-          rm -rf package.json package-lock.json node_modules .next public next.config.js
+          rm -rf package.json package-lock.json node_modules .next public next.config.ts
 
     - name: Upload artifacts to EC2
       uses: appleboy/scp-action@v0.1.4
