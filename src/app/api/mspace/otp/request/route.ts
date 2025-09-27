@@ -139,7 +139,7 @@ export async function POST(request: Request) {
           subscriptionId,
           status: "pending",
           createdAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // 15 minutes expiry
+          expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 60 minutes expiry
           attempts: 0,
           ipAddress: request.headers.get("x-forwarded-for") || "unknown",
           userAgent: request.headers.get("user-agent") || "unknown",
