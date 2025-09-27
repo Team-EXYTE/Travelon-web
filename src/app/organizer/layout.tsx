@@ -15,6 +15,7 @@ import {
   BarChart,
   Plus,
   HelpCircle,
+  CreditCard,
 } from "lucide-react";
 
 export default function OrganizerLayout({
@@ -180,6 +181,25 @@ export default function OrganizerLayout({
                     }`}
                   />
                   Analytics
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/organizer/payments"
+                  className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+                    pathname === "/organizer/payments"
+                      ? "bg-white text-black"
+                      : "text-white hover:bg-gray-800"
+                  }`}
+                >
+                  <CreditCard
+                    className={`h-5 w-5 mr-3 ${
+                      pathname === "/organizer/payments"
+                        ? "text-black"
+                        : "text-white"
+                    }`}
+                  />
+                  Payments
                 </Link>
               </li>
               <li>
