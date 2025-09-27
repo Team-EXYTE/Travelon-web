@@ -141,11 +141,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Mark OTP session as verified
+    // Extract the masked subscriber ID from the response
+    const maskedSubscriberId = result.subscriberId;
+    const subscriptionStatus = result.subscriptionStatus || "PENDING";
+
+    // Mark OTP session as verified and store the masked subscriber ID
     await sessionDoc.ref.update({
       status: "verified",
       verifiedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      mspaceResponse: result, // Store the complete response for reference
     });
 
     // Update subscription status
@@ -163,6 +168,8 @@ export async function POST(request: Request) {
           status: "verifying",
           verifiedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          maskedSubscriberId, // Store the masked subscriber ID
+          mspaceSubscriptionStatus: subscriptionStatus,
         });
       }
 
@@ -179,6 +186,7 @@ export async function POST(request: Request) {
           lastOtpVerifiedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           subscriptionStatus: "pending",
+          maskedSubscriberId, 
         });
       }
     } catch (dbError) {
@@ -190,6 +198,8 @@ export async function POST(request: Request) {
       success: true,
       message: "OTP verified successfully",
       subscriptionId: sessionData.subscriptionId,
+      subscriberId: maskedSubscriberId, // Return the masked subscriber ID to the client
+      subscriptionStatus,
       phone: sessionData.phone,
       token: sessionId, // Return the session ID as a token for client-side tracking
     });
