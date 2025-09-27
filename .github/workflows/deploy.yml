@@ -22,6 +22,22 @@ jobs:
 
     - name: Build Next.js
       run: npm run build
+      env:
+        NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+        NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+        NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+        NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID }}
+        NODE_ENV: ${{ secrets.NODE_ENV }}
+        FIREBASE_CLIENT_EMAIL: ${{ secrets.FIREBASE_CLIENT_EMAIL }}
+        FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+        MSPACE_API_URL: ${{ secrets.MSPACE_API_URL }}
+        MSPACE_APP_ID: ${{ secrets.MSPACE_APP_ID }}
+        MSPACE_PASSWORD: ${{ secrets.MSPACE_PASSWORD }}
+        MSPACE_APP_HASH: ${{ secrets.MSPACE_APP_HASH }}
+        MSPACE_APP_CODE: ${{ secrets.MSPACE_APP_CODE }}
 
     - name: Prune dev dependencies (production only)
       run: npm prune --production
@@ -29,7 +45,7 @@ jobs:
     - name: Archive built files
       run: |
         tar -czf travelon-build.tar.gz \
-        package.json package-lock.json node_modules .next public next.config.js
+        package.json package-lock.json node_modules .next public next.config.ts
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.10
@@ -57,7 +73,7 @@ jobs:
           pm2 stop travelon || true
 
           echo "Cleaning old files..."
-          rm -rf package.json package-lock.json node_modules .next public next.config.js
+          rm -rf package.json package-lock.json node_modules .next public next.config.ts
 
     - name: Upload artifacts to EC2
       uses: appleboy/scp-action@v0.1.4
@@ -75,6 +91,10 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
+          # Load NVM so Node/npm/pm2 are available
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
           cd /home/ubuntu/Travelon-web
           tar -xzf travelon-build.tar.gz
           rm travelon-build.tar.gz
