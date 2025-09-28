@@ -81,7 +81,7 @@ const PaymentsPage: React.FC = () => {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
       {/* Bank details notification */}
       {showBankNotification && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 relative">
