@@ -17,15 +17,11 @@ import { initAdmin, getAdminDB } from "@/db/firebaseAdmin";
  *         description: Notification received
  */
 export async function POST(request: Request) {
+  console.log("[mSpace Charge Notification] Received request");
   try {
     // Get notification data
     const notification = await request.json();
-
-    // Log the notification for debugging
-    console.log(
-      "[mSpace Charge Notification]:",
-      JSON.stringify(notification, null, 2)
-    );
+    console.log('[mSpace Charge Notification]:', JSON.stringify(notification, null, 2));
 
     // const {
     //   applicationId,
