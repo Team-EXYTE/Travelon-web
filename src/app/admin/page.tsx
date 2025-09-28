@@ -192,7 +192,7 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-          <Link href="/admin/customers" className="mt-4 text-sm text-black font-medium hover:underline">
+          <Link href="/admin/travellers" className="mt-4 text-sm text-black font-medium hover:underline">
             View all Travellers
           </Link>
         </div>

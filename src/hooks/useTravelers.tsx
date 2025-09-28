@@ -5,9 +5,12 @@ interface Traveler {
   firstName: string;
   lastName: string;
   email: string;
+  phone: string;
+  profileImage: string;
   joinDate: string;
   eventCount: number;
   status: string;
+  bookings?: string[];
 }
 
 interface TravelersData {
@@ -23,7 +26,7 @@ export function useTravelers() {
   const fetchTravelers = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/travelers');
+      const response = await fetch('/api/admin/travellers');
       if (!response.ok) {
         throw new Error('Failed to fetch travelers');
       }
@@ -40,7 +43,7 @@ export function useTravelers() {
 
   const deleteTraveler = async (travelerId: string) => {
     try {
-      const response = await fetch('/api/admin/travelers', {
+      const response = await fetch('/api/admin/travellers', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

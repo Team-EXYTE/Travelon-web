@@ -42,10 +42,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
       isActive: pathname === "/admin/events"
     },
     {
-      title: "Travelers",
+      title: "Travellers",
       icon: UserCircle,
-      href: "/admin/travelers",
-      isActive: pathname === "/admin/travelers"
+      href: "/admin/travellers",
+      isActive: pathname === "/admin/travellers"
     },{
       title: "Payments",
       icon: CreditCard,
