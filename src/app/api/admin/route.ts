@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { initAdmin, getAdminAuth, getAdminDB } from '@/db/firebaseAdmin';
+import { join } from 'path';
 
 
 export async function GET() {
@@ -43,8 +44,7 @@ export async function GET() {
     
     // Get total travelers count (assuming role 'traveler' or users without organizer role)
     const travelersSnapshot = await adminDB
-      .collection('users')
-      .where('role', '==', 'traveler')
+      .collection('users-travellers')
       .get();
     const totalTravelers = travelersSnapshot.size;
     
@@ -73,8 +73,7 @@ export async function GET() {
     
     // Get recent 3 travelers that joined (get all travelers first, then sort in memory)
     const allTravelersSnapshot = await adminDB
-      .collection('users')
-      .where('role', '==', 'traveler')
+      .collection('users-travellers')
       .get();
     
     // Sort by updatedAt in memory and take first 3
@@ -94,11 +93,11 @@ export async function GET() {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
-        username: data.username,
-        district: data.district,
-        updatedAt: data.updatedAt,
+        username: data.firstName,
         phoneNumber: data.phoneNumber,
-        phoneNumberVerified: data.phoneNumberVerified
+        phoneNumberVerified: data.phoneNumberVerified,
+        joinDate: data.joinDate,
+        profileImage: data.profileImage || '',
       };
     });
     

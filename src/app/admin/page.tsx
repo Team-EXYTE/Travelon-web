@@ -28,8 +28,9 @@ interface AdminDashboardData {
     firstName: string;
     lastName: string;
     username: string;
-    updatedAt: string;
     phoneNumberVerified: boolean;
+    profileImage: string;
+    joinDate: string;
   }>;
 }
 
@@ -168,8 +169,20 @@ export default function AdminDashboard() {
           <div className="space-y-4">
             {data.recentTravelers.map((traveler) => (
               <div key={traveler.id} className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <UserCircle size={16} className="text-gray-600" />
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                  {traveler.profileImage ? (
+                  <Image 
+                    src={traveler.profileImage} 
+                    alt={`${traveler.firstName} ${traveler.lastName}`}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                  ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <UserCircle size={16} className="text-gray-600" />
+                  </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h4 className="font-medium text-black">
@@ -177,7 +190,7 @@ export default function AdminDashboard() {
                   </h4>
                   <p className="text-sm text-gray-600">@{traveler.username}</p>
                   <p className="text-xs text-gray-500">
-                    Joined {new Date(traveler.updatedAt).toLocaleDateString()}
+                    Joined {new Date(traveler.joinDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div className="ml-auto">
