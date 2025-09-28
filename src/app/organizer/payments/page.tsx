@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Calendar, Users } from "lucide-react";
 import Image from "next/image";
 
 interface Payment {
+	id: string;
 	eventName: string;
 	participantCount: number;
 	ticketPrice: number;
@@ -13,65 +14,8 @@ interface Payment {
 	images: string[];
 }
 
-const payments: Payment[] = [
-	{
-		eventName: "Kandy Festival",
-		participantCount: 120,
-		ticketPrice: 25,
-		paymentStatus: "Completed",
-		createdAt: "2025-09-28T10:00:00Z",
-		images: ["/kandy.jpg"],
-	},
-	{
-		eventName: "Sigiriya Adventure",
-		participantCount: 80,
-		ticketPrice: 30,
-		paymentStatus: "Pending",
-		createdAt: "2025-09-27T15:30:00Z",
-		images: ["/Sigiriya.jpg"],
-	},
-	{
-		eventName: "Mirissa Beach Party",
-		participantCount: 200,
-		ticketPrice: 20,
-		paymentStatus: "Completed",
-		createdAt: "2025-09-29T09:00:00Z",
-		images: ["/mirissa.jpg"],
-	},
-	{
-		eventName: "Tea Farm Tour",
-		participantCount: 50,
-		ticketPrice: 40,
-		paymentStatus: "Completed",
-		createdAt: "2025-09-26T12:00:00Z",
-		images: ["/tea_farm.jpeg"],
-	},{
-		eventName: "Mirissa Beach Party",
-		participantCount: 200,
-		ticketPrice: 20,
-		paymentStatus: "Ongoing",
-		createdAt: "2025-09-29T09:00:00Z",
-		images: ["/mirissa.jpg"],
-	},
-	{
-		eventName: "Tea Farm Tour",
-		participantCount: 50,
-		ticketPrice: 40,
-		paymentStatus: "Ongoing",
-		createdAt: "2025-09-26T12:00:00Z",
-		images: ["/tea_farm.jpeg"],
-	},
-	{
-		eventName: "Temple Visit",
-		participantCount: 60,
-		ticketPrice: 15,
-		paymentStatus: "Pending",
-		createdAt: "2025-09-28T14:00:00Z",
-		images: ["/temple_of_tooth.jpg"],
-	},
-];
+import { useEffect } from "react";
 
-const sortedPayments = payments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 const statusStyles: Record<string, string> = {
 	Completed: "bg-green-50 text-green-700 border-green-200",
@@ -80,27 +24,44 @@ const statusStyles: Record<string, string> = {
 };
 
 const PaymentsPage: React.FC = () => {
-	const [filterStatus, setFilterStatus] = useState<string>("all");
+		const [payments, setPayments] = useState<Payment[]>([]);
+		const [filterStatus, setFilterStatus] = useState<string>("all");
 
-	// Format date for display
-	const formatDate = (dateString: string): string => {
-		const date = new Date(dateString);
-		return new Intl.DateTimeFormat("en-US", {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		}).format(date);
-	};
+		useEffect(() => {
+			const fetchPayments = async () => {
+				try {
+					const res = await fetch("/api/organizer/payments");
+					if (!res.ok) throw new Error("Failed to fetch payments");
+					const data = await res.json();
+					setPayments(Array.isArray(data.payments) ? data.payments : []);
+					
+				} catch (err) {
+					setPayments([]);
+				}
+			};
+			fetchPayments();
+		}, []);
 
-	// Filter payments by status
-	const filteredPayments = sortedPayments.filter((payment) => {
-		if (filterStatus === "all") return true;
-		if (filterStatus === "ongoing") return payment.paymentStatus === "Ongoing";
-		return payment.paymentStatus.toLowerCase() === filterStatus;
-	});
+		// Format date for display
+		const formatDate = (dateString: string): string => {
+			const date = new Date(dateString);
+			return new Intl.DateTimeFormat("en-US", {
+				day: "numeric",
+				month: "short",
+				year: "numeric",
+				hour: "2-digit",
+				minute: "2-digit",
+			}).format(date);
+		};
 
+		// Sort and filter payments
+		const sortedPayments = payments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+		const filteredPayments = sortedPayments.filter((payment) => {
+			if (filterStatus === "all") return true;
+			if (filterStatus === "ongoing") return payment.paymentStatus === "Ongoing";
+			return payment.paymentStatus.toLowerCase() === filterStatus;
+		});
+		console.log("Filtered Payments:", filteredPayments);
 		// Modal state
 		const [showModal, setShowModal] = useState<boolean>(false);
 		const [selectedOngoing, setSelectedOngoing] = useState<string>("");
@@ -155,7 +116,7 @@ const PaymentsPage: React.FC = () => {
 							>
 								<option value="">Select...</option>
 								{ongoingPayments.map((p, idx) => (
-									<option key={idx} value={p.eventName}>
+									<option key={idx} value={p.id}>
 										{`${p.eventName} |  ${p.participantCount} participants | Rs${p.ticketPrice}| Rs${p.ticketPrice * p.participantCount}`}
 									</option>
 								))}
@@ -170,9 +131,34 @@ const PaymentsPage: React.FC = () => {
 								<button
 									className="border border-gray-300 rounded-lg px-4 py-2 bg-black text-white font-semibold hover:bg-gray-800 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 outline-none"
 									disabled={!selectedOngoing}
-									onClick={() => {
-										// Handle request payment logic here
-										setShowModal(false);
+									onClick={async () => {
+										try {
+											// Send PATCH request to update payment status
+											const res = await fetch('/api/organizer/payments', {
+												method: 'PATCH',
+												headers: {
+													'Content-Type': 'application/json',
+												},
+												body: JSON.stringify({ eventId: selectedOngoing }),
+											});
+											
+											if (!res.ok) {
+												throw new Error('Failed to update payment status');
+											}
+											
+											// Refresh payments after successful update
+											const fetchRes = await fetch('/api/organizer/payments');
+											if (fetchRes.ok) {
+												const data = await fetchRes.json();
+												setPayments(Array.isArray(data.payments) ? data.payments : []);
+											}
+											
+											// Close modal
+											setShowModal(false);
+										} catch (error) {
+											console.error('Error updating payment status:', error);
+											alert('Failed to request payment. Please try again.');
+										}
 									}}
 								>
 									Request
@@ -200,6 +186,7 @@ const PaymentsPage: React.FC = () => {
 								<tr key={idx} className="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
 									<td className="py-3 px-4">
 										<div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+											
 											<Image
 												src={payment.images && payment.images.length > 0 ? payment.images[0] : "/SriLanks.webp"}
 												alt={payment.eventName}
