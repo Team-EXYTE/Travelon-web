@@ -13,7 +13,9 @@ import {
   LogOut,
   CreditCard,
   User,
-  UserCog
+  UserCog,
+  UserPlus,
+  LifeBuoy
 } from "lucide-react";
 
 interface SidebarProps {
@@ -57,9 +59,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
     },
     {
       title: "Create Admins",
-      icon: UserCog,
+      icon: UserPlus,
       href: "/admin/admins",
       isActive: pathname === "/admin/admins"
+    },{
+      title: "Support Requests",
+      icon: LifeBuoy,
+      href: "/admin/supportRequests",
+      isActive: pathname === "/admin/supportRequests"
     },
     {
       title: "Profile",

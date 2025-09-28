@@ -575,9 +575,9 @@ export default function AdminsPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-10">
           <div 
-            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl"
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl mt-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
@@ -607,9 +607,9 @@ export default function AdminsPage() {
 
       {/* Add/Edit Admin Modal */}
       {adminModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-10">
           <div 
-            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto mt-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-medium text-gray-900 mb-4">
