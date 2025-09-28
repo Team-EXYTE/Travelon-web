@@ -87,7 +87,7 @@ const LoginPage = () => {
           setSuccessMessage("Login successful! Redirecting...");
           setTimeout(() => {
             setIsLoading(false);
-            router.push("/" + sessionData.role + "/profile");
+            router.push(`/${sessionData.role.toLowerCase()}/profile`);
           }, 1000); 
         }
         else{
