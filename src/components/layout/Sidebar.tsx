@@ -11,7 +11,9 @@ import {
   LayoutDashboard,
   Settings,
   LogOut,
-  CreditCard
+  CreditCard,
+  User,
+  UserCog
 } from "lucide-react";
 
 interface SidebarProps {
@@ -46,7 +48,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
       icon: UserCircle,
       href: "/admin/travellers",
       isActive: pathname === "/admin/travellers"
-    },{
+    },
+    {
       title: "Payments",
       icon: CreditCard,
       href: "/admin/payments",
@@ -54,20 +57,20 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
     },
     {
       title: "Create Admins",
-      icon: Users,
+      icon: UserCog,
       href: "/admin/admins",
       isActive: pathname === "/admin/admins"
     },
-
+    {
+      title: "Profile",
+      icon: User,
+      href: "/admin/profile",
+      isActive: pathname === "/admin/profile"
+    },
   ];
 
   const utilityNavItems = [
-    {
-      title: "Settings",
-      icon: Settings,
-      href: "/admin/settings",
-      isActive: pathname === "/admin/settings"
-    },
+    
     {
       title: "Logout",
       icon: LogOut,
