@@ -33,10 +33,9 @@ export async function PATCH(
     // console.log("User data:", userData);
     // console.log("Admin status:", userData?.isAdmin);
     
-    // if (userData?.isAdmin !== true) {
-    //   console.log("User is not an admin");
-    //   return NextResponse.json({ error: "Not authorized - Admin access required" }, { status: 403 });
-    // }
+    if (userData?.role !== "Admin") {
+      return NextResponse.json({ error: "Not authorized - Admin access required" }, { status: 403 });
+    }
     
     // Parse the request body
     const body = await request.json();
