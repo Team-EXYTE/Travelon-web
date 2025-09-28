@@ -1,60 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { UserCircle, Search,  MoreHorizontal, Edit, Trash2, Mail, Calendar, Check, X, AlertTriangle } from "lucide-react";
+import { UserCircle, Search, MoreHorizontal, Edit, Trash2, Mail, Calendar, Phone, Check, X, AlertTriangle, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useTravelers } from "@/hooks/useTravelers";
 // Plus,
-export default function CustomersPage() {
-  // Sample customer data
-  const [customers, setCustomers] = useState([
-    { 
-      id: 1, 
-      name: "John Smith", 
-      email: "john.smith@example.com", 
-      joinDate: "2025-05-15", 
-      eventsAttended: 4, 
-      status: "Active" 
-    },
-    { 
-      id: 2, 
-      name: "Emma Watson", 
-      email: "emma.watson@example.com", 
-      joinDate: "2025-06-02", 
-      eventsAttended: 2, 
-      status: "Active" 
-    },
-    { 
-      id: 3, 
-      name: "Michael Brown", 
-      email: "michael.brown@example.com", 
-      joinDate: "2025-06-10", 
-      eventsAttended: 1, 
-      status: "Active" 
-    },
-    { 
-      id: 4, 
-      name: "Sophia Garcia", 
-      email: "sophia.garcia@example.com", 
-      joinDate: "2025-06-22", 
-      eventsAttended: 0, 
-      status: "New" 
-    },
-    { 
-      id: 5, 
-      name: "David Lee", 
-      email: "david.lee@example.com", 
-      joinDate: "2025-04-18", 
-      eventsAttended: 3, 
-      status: "Inactive" 
-    },
-  ]);
-
+export default function TravelersPage() {
+  // Use travelers hook to fetch data
+  const { data, loading, error, refetch, deleteTraveler } = useTravelers();
+  // console.log("Travelers data:", data);
   // State to track which dropdown is open
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   
   // State for delete confirmation modal
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
-    customerId: number | null;
+    customerId: string | null;
     customerName: string;
   }>({
     isOpen: false,
@@ -63,7 +24,7 @@ export default function CustomersPage() {
   });
 
   // Toggle dropdown visibility
-  const toggleDropdown = (customerId: number) => {
+  const toggleDropdown = (customerId: string) => {
     if (openDropdownId === customerId) {
       setOpenDropdownId(null);
     } else {
@@ -77,7 +38,7 @@ export default function CustomersPage() {
   };
 
   // Open delete confirmation
-  const openDeleteConfirmation = (customerId: number, customerName: string) => {
+  const openDeleteConfirmation = (customerId: string, customerName: string) => {
     setDeleteConfirmation({
       isOpen: true,
       customerId,
@@ -94,21 +55,51 @@ export default function CustomersPage() {
     });
   };
 
-  // Delete customer
-  const deleteCustomer = () => {
+  // Delete traveler
+  const handleDeleteTraveler = async () => {
     if (deleteConfirmation.customerId) {
-      setCustomers(customers.filter(customer => customer.id !== deleteConfirmation.customerId));
-      closeDeleteConfirmation();
+      try {
+        await deleteTraveler(deleteConfirmation.customerId);
+        closeDeleteConfirmation();
+      } catch (error) {
+        console.error('Failed to delete traveler:', error);
+      }
     }
   };
 
-  // Update customer status
-  const updateCustomerStatus = (customerId: number, newStatus: string) => {
-    setCustomers(customers.map(customer => 
-      customer.id === customerId ? {...customer, status: newStatus} : customer
-    ));
+  // Update traveler status
+  const updateTravelerStatus = (travelerId: string, newStatus: string) => {
+    // Would need to implement this in the API
+    // For now, just log and refresh
+    console.log(`Update traveler ${travelerId} to status ${newStatus}`);
+    refetch();
     setOpenDropdownId(null);
   };
+
+  // Show loading or error state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex flex-col items-center">
+          <Loader2 size={24} className="animate-spin text-gray-500 mb-2" />
+          <div className="text-gray-500">Loading travelers data...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">
+          Error: {error} <button onClick={refetch} className="underline">Try again</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Get travelers array from data
+  const travelers = data?.travelers || [];
 
   return (
     <div onClick={closeDropdown}>
@@ -148,7 +139,7 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      {/* Customers table */}
+      {/* Travelers table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -158,6 +149,9 @@ export default function CustomersPage() {
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Email
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Phone
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Join Date
@@ -174,49 +168,72 @@ export default function CustomersPage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {customers.map((customer) => (
-              <tr key={customer.id} className="hover:bg-gray-50">
+            {travelers.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                  No travelers found
+                </td>
+              </tr>
+            ) : travelers.map((traveler) => (
+              <tr key={traveler.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                      <UserCircle size={16} className="text-gray-600" />
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full overflow-hidden relative">
+                      {traveler.profileImage ? (
+                        <Image 
+                          src={traveler.profileImage} 
+                          alt={`${traveler.firstName} ${traveler.lastName}`} 
+                          fill
+                          sizes="40px"
+                          className="object-cover" 
+                        />
+                      ) : (
+                        <div className="h-full w-full bg-gray-200 flex items-center justify-center">
+                          <UserCircle size={16} className="text-gray-600" />
+                        </div>
+                      )}
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                      <div className="text-sm font-medium text-gray-900">{traveler.firstName} {traveler.lastName}</div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900 flex items-center">
-                    <Mail size={14} className="mr-1" /> {customer.email}
+                    <Mail size={14} className="mr-1" /> {traveler.email}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900 flex items-center">
-                    <Calendar size={14} className="mr-1" /> {new Date(customer.joinDate).toLocaleDateString()}
+                    <Phone size={14} className="mr-1" /> {traveler.phone || 'N/A'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{customer.eventsAttended}</div>
+                  <div className="text-sm text-gray-900 flex items-center">
+                    <Calendar size={14} className="mr-1" /> {new Date(traveler.joinDate).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">{traveler.eventCount}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                    ${customer.status === 'Active' ? 'bg-green-100 text-green-800' : 
-                    customer.status === 'New' ? 'bg-blue-100 text-blue-800' : 
+                    ${traveler.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                    traveler.status === 'New' ? 'bg-blue-100 text-blue-800' : 
                     'bg-gray-100 text-gray-800'}`}>
-                    {customer.status}
+                    {traveler.status}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center justify-end gap-2">
-                    <button className="p-1 text-gray-500 hover:text-black">
+                    {/* <button className="p-1 text-gray-500 hover:text-black">
                       <Edit size={16} />
-                    </button>
+                    </button> */}
                     <button 
                       className="p-1 text-gray-500 hover:text-red-500"
                       onClick={(e) => {
                         e.stopPropagation();
-                        openDeleteConfirmation(customer.id, customer.name);
+                        openDeleteConfirmation(traveler.id, `${traveler.firstName} ${traveler.lastName}`);
                       }}
                     >
                       <Trash2 size={16} />
@@ -226,31 +243,31 @@ export default function CustomersPage() {
                         className="p-1 text-gray-500 hover:text-black"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleDropdown(customer.id);
+                          toggleDropdown(traveler.id);
                         }}
                       >
                         <MoreHorizontal size={16} />
                       </button>
                       
                       {/* Dropdown menu */}
-                      {openDropdownId === customer.id && (
+                      {openDropdownId === traveler.id && (
                         <div 
                           className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <div className="py-1">
-                            {(customer.status === 'Active' || customer.status === 'New') && (
+                            {(traveler.status === 'Active' || traveler.status === 'New') && (
                               <button
-                                onClick={() => updateCustomerStatus(customer.id, 'Inactive')}
+                                onClick={() => updateTravelerStatus(traveler.id, 'Inactive')}
                                 className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                               >
                                 <X size={16} className="mr-2 text-red-500" />
                                 Mark as Inactive
                               </button>
                             )}
-                            {customer.status === 'Inactive' && (
+                            {traveler.status === 'Inactive' && (
                               <button
-                                onClick={() => updateCustomerStatus(customer.id, 'Active')}
+                                onClick={() => updateTravelerStatus(traveler.id, 'Active')}
                                 className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                               >
                                 <Check size={16} className="mr-2 text-green-500" />
@@ -274,7 +291,7 @@ export default function CustomersPage() {
         {/* Pagination */}
         <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
           <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">{customers.length}</span> of <span className="font-medium">{customers.length}</span> results
+            Showing <span className="font-medium">1</span> to <span className="font-medium">{travelers.length}</span> of <span className="font-medium">{data?.total || travelers.length}</span> results
           </div>
           <div className="flex gap-1">
             <button className="bg-white border border-gray-300 text-gray-500 hover:bg-gray-50 px-4 py-2 text-sm font-medium rounded-md">
@@ -309,7 +326,7 @@ export default function CustomersPage() {
                 Cancel
               </button>
               <button
-                onClick={deleteCustomer}
+                onClick={handleDeleteTraveler}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none"
               >
                 Delete

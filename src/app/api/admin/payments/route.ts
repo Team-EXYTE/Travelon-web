@@ -16,11 +16,11 @@ export async function GET(request: Request) {
     const adminAuth = getAdminAuth();
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
     const uid = decodedClaims.uid;
-    console.log("Decoded UID:", uid);
+    // console.log("Decoded UID:", uid);
     
     // Get admin status
     const userDoc = await db.collection("users").doc(uid).get();
-    console.log("User doc exists:", userDoc.exists);
+    // console.log("User doc exists:", userDoc.exists);
     
     if (!userDoc.exists) {
       console.log("User does not exist in the database");
@@ -28,20 +28,20 @@ export async function GET(request: Request) {
     }
     
     const userData = userDoc.data();
-    console.log("User data:", userData);
-    console.log("Admin status:", userData?.isAdmin);
+    // console.log("User data:", userData);
+    // console.log("Admin status:", userData?.isAdmin);
     
     // if (userData?.isAdmin !== true) {
     //   console.log("User is not an admin");
     //   return NextResponse.json({ error: "Not authorized - Admin access required" }, { status: 403 });
     // }
     
-    console.log("Admin verified:", uid);
+    // console.log("Admin verified:", uid);
 
     // Parse query parameters
     const url = new URL(request.url);
     const status = url.searchParams.get("status") || "Pending"; // Default to Pending if not specified
-    console.log("Status filter:", status);
+    // console.log("Status filter:", status);
     
     // Get payments based on status filter (default to Pending for admins)
     let paymentsSnap;
@@ -56,11 +56,11 @@ export async function GET(request: Request) {
         .get();
     }
     
-    console.log(`Found ${paymentsSnap.size} payments with status: ${status}`);
+    // console.log(`Found ${paymentsSnap.size} payments with status: ${status}`);
     
     // Extract event IDs from the payments to fetch only relevant events
     const eventIds = paymentsSnap.docs.map(doc => doc.data().eventId).filter(Boolean);
-    console.log("Event IDs to fetch:", eventIds);
+    // console.log("Event IDs to fetch:", eventIds);
     
     // Only fetch events that are referenced in the payments
     const eventMap = new Map();
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
     if (eventIds.length > 0) {
       // Since we might have duplicate event IDs, let's deduplicate them first
       const uniqueEventIds = [...new Set(eventIds)];
-      console.log(`Fetching ${uniqueEventIds.length} unique events`);
+    //   console.log(`Fetching ${uniqueEventIds.length} unique events`);
       
       // Fetch each event individually for simplicity and reliability
       for (const eventId of uniqueEventIds) {
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
         }
       }
       
-      console.log(`Successfully fetched ${eventMap.size} events out of ${uniqueEventIds.length} unique referenced events`);
+    //   console.log(`Successfully fetched ${eventMap.size} events out of ${uniqueEventIds.length} unique referenced events`);
     }
     
     // Transform payment data
@@ -103,8 +103,8 @@ export async function GET(request: Request) {
       const eventData = eventMap.get(eventId) || {};
       
       // Debug information for each payment
-      console.log(`Processing payment ${doc.id} with eventId ${eventId}`);
-      console.log(`Event data found:`, eventData ? "Yes" : "No");
+    //   console.log(`Processing payment ${doc.id} with eventId ${eventId}`);
+    //   console.log(`Event data found:`, eventData ? "Yes" : "No");
       
       return {
         id: doc.id,
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
       };
     });
     
-    console.log(`Returning ${payments.length} processed payments to client`);
+    // console.log(`Returning ${payments.length} processed payments to client`);
     return NextResponse.json({ payments });
   } catch (error) {
     const details = typeof error === "object" && error !== null && "message" in error ? (error as any).message : String(error);

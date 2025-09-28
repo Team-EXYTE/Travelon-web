@@ -18,11 +18,11 @@ export async function PATCH(
     const adminAuth = getAdminAuth();
     const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
     const uid = decodedClaims.uid;
-    console.log("Decoded UID:", uid);
+    // console.log("Decoded UID:", uid);
     
     // Get admin status
     const userDoc = await db.collection("users").doc(uid).get();
-    console.log("User doc exists:", userDoc.exists);
+    // console.log("User doc exists:", userDoc.exists);
     
     if (!userDoc.exists) {
       console.log("User does not exist in the database");
@@ -30,8 +30,8 @@ export async function PATCH(
     }
     
     const userData = userDoc.data();
-    console.log("User data:", userData);
-    console.log("Admin status:", userData?.isAdmin);
+    // console.log("User data:", userData);
+    // console.log("Admin status:", userData?.isAdmin);
     
     // if (userData?.isAdmin !== true) {
     //   console.log("User is not an admin");
