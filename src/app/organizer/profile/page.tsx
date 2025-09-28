@@ -12,9 +12,11 @@ import {
   Shield,
   CheckCircle,
   XCircle,
+  CreditCard,
 } from "lucide-react";
 import OtpVerificationModal from "@/components/OtpVerificationModal";
 import ProfileEditModal from "@/components/ProfileEditModal";
+import BankDetailsModal, { BankDetails } from "@/components/BankDetailsModal";
 
 interface UserProfile {
   firstName: string;
@@ -29,6 +31,14 @@ interface UserProfile {
   phoneNumberVerified: boolean;
   updatedAt: string;
   subscriptionStatus?: string;
+  bankDetails?: {
+    bankName: string;
+    bankCode: string;
+    branchName: string;
+    branchCode: string;
+    accountNumber: string;
+    updatedAt: string;
+  };
 }
 
 const ProfilePage = () => {
@@ -38,6 +48,7 @@ const ProfilePage = () => {
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showOrgModal, setShowOrgModal] = useState(false);
+  const [showBankModal, setShowBankModal] = useState(false); // New state
   const [verifying, setVerifying] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -99,6 +110,36 @@ const ProfilePage = () => {
   // Handle successful profile update
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
     setProfile(updatedProfile);
+  };
+
+  // Handle bank details update
+  const handleBankDetailsUpdate = async (bankDetails: BankDetails) => {
+    try {
+      const response = await fetch("/api/organizer/profile/update-bank", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bankDetails),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update bank details");
+      }
+
+      const data = await response.json();
+      setProfile(data.user);
+
+      // Show success message
+      setSuccessMessage("Bank details updated successfully!");
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+    } catch (err: any) {
+      console.error("Error updating bank details:", err);
+      setError(err.message);
+    }
   };
 
   if (loading && !profile) {
@@ -188,6 +229,14 @@ const ProfilePage = () => {
           isOrgUpdate={true}
         />
       )}
+
+      {/* Bank Details Modal - New addition */}
+      <BankDetailsModal
+        isOpen={showBankModal}
+        onClose={() => setShowBankModal(false)}
+        onSave={handleBankDetailsUpdate}
+        initialDetails={profile?.bankDetails}
+      />
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
@@ -375,8 +424,58 @@ const ProfilePage = () => {
             <Building2 size={16} />
             Update Organization
           </button>
+
+          {/* New Bank Details Button */}
+          <button
+            className="flex items-center justify-center gap-2 bg-gray-50 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+            onClick={() => setShowBankModal(true)}
+          >
+            <CreditCard size={16} />
+            {profile?.bankDetails ? "Update Bank Details" : "Add Bank Details"}
+          </button>
         </div>
       </div>
+
+      {/* Bank Account Details Card - show if bank details exist */}
+      {profile?.bankDetails && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Bank Account Details</h3>
+            <button
+              onClick={() => setShowBankModal(true)}
+              className="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <Edit size={14} />
+              Edit
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Bank Name</p>
+              <p className="text-gray-800">{profile.bankDetails.bankName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Bank Code</p>
+              <p className="text-gray-800">{profile.bankDetails.bankCode}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Branch Name</p>
+              <p className="text-gray-800">{profile.bankDetails.branchName}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Branch Code</p>
+              <p className="text-gray-800">{profile.bankDetails.branchCode}</p>
+            </div>
+            <div className="md:col-span-2">
+              <p className="text-sm text-gray-500">Account Number</p>
+              <p className="text-gray-800">
+                {profile.bankDetails.accountNumber}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
