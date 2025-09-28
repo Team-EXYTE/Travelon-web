@@ -20,6 +20,9 @@ import { initAdmin, getAdminDB } from "@/db/firebaseAdmin";
  *               phone:
  *                 type: string
  *                 description: The phone number to send OTP to
+ *               isOrganizer:
+ *                 type: boolean
+ *                 description: Flag to determine if the user is an organizer (true) or traveller (false)
  *     responses:
  *       200:
  *         description: OTP sent successfully
@@ -32,7 +35,7 @@ export async function POST(request: Request) {
   try {
     // Get request body
     const body = await request.json();
-    const { phone } = body;
+    const { phone, isOrganizer = true } = body; // Default to organizer for backward compatibility
 
     if (!phone) {
       return NextResponse.json(
@@ -66,10 +69,14 @@ export async function POST(request: Request) {
     await initAdmin();
     const adminDB = getAdminDB();
 
+    // Determine which collection to use based on the user type
+    const userCollection = isOrganizer ? "users" : "users-travellers";
+
     // Check if already subscribed
+    let userQuery;
     try {
-      const userQuery = await adminDB
-        .collection("users")
+      userQuery = await adminDB
+        .collection(userCollection)
         .where("phoneNumber", "==", cleanPhone)
         .where("subscriptionStatus", "==", "subscribed")
         .limit(1)
@@ -143,6 +150,7 @@ export async function POST(request: Request) {
           attempts: 0,
           ipAddress: request.headers.get("x-forwarded-for") || "unknown",
           userAgent: request.headers.get("user-agent") || "unknown",
+          userType: isOrganizer ? "organizer" : "traveller", // Store user type
         });
 
       // Initialize subscription tracking
@@ -155,11 +163,12 @@ export async function POST(request: Request) {
         sessionId, // Link to the OTP session
         createdAt: new Date().toISOString(),
         attempts: 0,
+        userType: isOrganizer ? "organizer" : "traveller", // Store user type
       });
 
       // Update user record if exists
       const userQuery = await adminDB
-        .collection("users")
+        .collection(userCollection)
         .where("phoneNumber", "==", cleanPhone)
         .limit(1)
         .get();

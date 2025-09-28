@@ -62,6 +62,7 @@ export async function POST(request: Request) {
       
       if (!subscriptionQuery.empty) {
         const subscriptionDoc = subscriptionQuery.docs[0];
+        const subscriptionData = subscriptionDoc.data();
         const newStatus = status === 'REGISTERED' ? 'subscribed' : 'unsubscribed';
 
         await subscriptionDoc.ref.update({
@@ -69,10 +70,19 @@ export async function POST(request: Request) {
           updatedAt: new Date().toISOString(),
           notification: notification
         });
-
+        
+        // Check if we have user type information in the subscription document
+        const userType = subscriptionData.userType || 'organizer'; // Default to organizer
+        
+        // Determine which collection to query based on user type
+        const userCollection = userType === 'organizer' ? 'users' : 'users-travellers';
+        
+        console.log(`Looking for user in ${userCollection} with maskedSubscriberId: ${subscriberId}`);
+        
+        // Try to find user by maskedSubscriberId in the appropriate collection
         const userQuery = await adminDB
-                .collection('users')
-                .where('maskedSubscriberId', '==', subscriberId) // LOOKUP BY MASKED ID
+                .collection(userCollection)
+                .where('maskedSubscriberId', '==', subscriberId)
                 .limit(1)
                 .get();
 
@@ -82,6 +92,28 @@ export async function POST(request: Request) {
             subscriptionStatus: newStatus,
             subscriptionUpdatedAt: new Date().toISOString()
           });
+          console.log(`Updated ${userType} user with subscription status: ${newStatus}`);
+        } else {
+          console.log(`No user found in ${userCollection} with maskedSubscriberId: ${subscriberId}, checking other collection`);
+          
+          // If not found in the expected collection, try the other collection as fallback
+          const fallbackCollection = userType === 'organizer' ? 'users-travellers' : 'users';
+          const fallbackQuery = await adminDB
+                .collection(fallbackCollection)
+                .where('maskedSubscriberId', '==', subscriberId)
+                .limit(1)
+                .get();
+                
+          if (!fallbackQuery.empty) {
+            const fallbackUserDoc = fallbackQuery.docs[0];
+            await fallbackUserDoc.ref.update({
+              subscriptionStatus: newStatus,
+              subscriptionUpdatedAt: new Date().toISOString()
+            });
+            console.log(`Updated user in fallback collection (${fallbackCollection}) with subscription status: ${newStatus}`);
+          } else {
+            console.warn(`No user found in any collection with maskedSubscriberId: ${subscriberId}`);
+          }
         }
         
         console.log(`Subscription status updated to "${newStatus}" for subscriberId: ${subscriberId}`);

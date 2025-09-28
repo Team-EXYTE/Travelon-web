@@ -96,15 +96,26 @@ const SignupPage = () => {
       const uid = user.uid;
       
       // 3. Prepare profile data
+      // Format phone number to standard 94XXXXXXXXX format
+      let cleanPhone = formData.phoneNumber.replace(/\D/g, ''); // Remove non-digit characters
+      
+      if (cleanPhone.startsWith("0")) {
+        // If starts with 0, replace with 94
+        cleanPhone = "94" + cleanPhone.substring(1);
+      } else if (!cleanPhone.startsWith("94")) {
+        // If doesn't start with 94, add it to the last 9 digits
+        cleanPhone = "94" + cleanPhone.substring(Math.max(0, cleanPhone.length - 9));
+      }
+      
       const profileData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         username: formData.username,
         orgName: formData.orgName,
-        phoneNumber: formData.phoneNumber,
+        phoneNumber: cleanPhone,
         address: formData.address,
         district: formData.district,
-        email: formData.email, // Include email as it's useful for profile
+        email: formData.email, 
       };
       
       // 4. Store profile data in the database via API
