@@ -10,7 +10,8 @@ import {
   UserCircle,
   LayoutDashboard,
   Settings,
-  LogOut
+  LogOut,
+  CreditCard
 } from "lucide-react";
 
 interface SidebarProps {
@@ -45,6 +46,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
       icon: UserCircle,
       href: "/admin/travelers",
       isActive: pathname === "/admin/travelers"
+    },{
+      title: "Payments",
+      icon: CreditCard,
+      href: "/admin/payments",
+      isActive: pathname === "/admin/payments"
     },
     {
       title: "Create Admins",
