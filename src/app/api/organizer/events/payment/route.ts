@@ -82,7 +82,11 @@ export async function POST(request: Request) {
         }
 
         // Record payment transaction in database
-        await adminDB.collection("eventPayments").add({
+        // Create payment document with all information at once
+        const paymentDocRef = adminDB
+          .collection("eventPayments")
+          .doc(externalTrxId);
+        await paymentDocRef.set({
           externalTrxId,
           userId,
           subscriberId,
@@ -147,18 +151,17 @@ export async function POST(request: Request) {
           JSON.stringify(mspaceData, null, 2)
         );
 
-        // Update transaction in database with mSpace response
-        await adminDB.collection("eventPayments").doc(externalTrxId).set(
-          {
-            statusCode: mspaceData.statusCode,
-            statusDetail: mspaceData.statusDetail,
-            internalTrxId: mspaceData.internalTrxId,
-            timeStamp: mspaceData.timeStamp,
-            updatedAt: new Date().toISOString(),
-            mspaceResponse: mspaceData,
-          },
-          { merge: true }
-        );
+        // Update the same document with the response data
+        await paymentDocRef.update({
+          statusCode: mspaceData.statusCode,
+          statusDetail: mspaceData.statusDetail,
+          internalTrxId: mspaceData.internalTrxId,
+          timeStamp: mspaceData.timeStamp,
+          updatedAt: new Date().toISOString(),
+          mspaceResponse: mspaceData,
+          // Update status based on response
+          status: mspaceData.statusCode === "S1000" ? "success" : "failed",
+        });
 
         // Return response to client
         return NextResponse.json({
