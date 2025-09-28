@@ -52,7 +52,8 @@ interface FormData {
   latitude: number;
   longitude: number;
   images: File[];
-  maxParticipants: string; // Using string for form handling, will convert to number when needed
+  maxParticipants: string;
+  eventType: "indoor" | "outdoor" | ""; // Add this line
 }
 
 interface ImagePreview {
@@ -81,10 +82,29 @@ const CreateEventPage = () => {
     latitude: 0,
     longitude: 0,
     images: [],
-    maxParticipants: "", // Empty string means open to everyone
+    maxParticipants: "",
+    eventType: "", // Add this line
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // New states for payment processing
+  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
+  const [paymentStatus, setPaymentStatus] = useState<
+    "idle" | "processing" | "success" | "error"
+  >("idle");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentDetails, setPaymentDetails] = useState<{
+    serviceFee: number;
+    totalAmount: number;
+    externalTrxId: string | null;
+    timeStamp: string | null;
+  }>({
+    serviceFee: 0,
+    totalAmount: 0,
+    externalTrxId: null,
+    timeStamp: null,
+  });
 
   // Dynamic import with no SSR for the map component (to avoid SSR issues with Leaflet)
   const LocationMap = dynamic(() => import("@/components/LocationMap"), {
@@ -200,6 +220,10 @@ const CreateEventPage = () => {
             "Maximum participants must be greater than 0";
         }
       }
+
+      if (!formData.eventType) {
+        newErrors.eventType = "Event type is required";
+      }
     } else if (currentStep === 2) {
       if (!formData.location.trim()) {
         newErrors.location = "Location is required";
@@ -255,10 +279,103 @@ const CreateEventPage = () => {
   //   }));
   // }, []);
 
+  // Payment processing function
+  const processPayment = async () => {
+    try {
+      setPaymentProcessing(true);
+      setPaymentStatus("processing");
+      setPaymentError(null);
+
+      // Get user authentication data
+      const authResponse = await fetch("/api/auth/me");
+      if (!authResponse.ok) {
+        throw new Error("Authentication failed. Please log in again.");
+      }
+
+      const authData = await authResponse.json();
+      const userId = authData.user?.uid;
+
+      if (!userId) {
+        throw new Error("User ID not found. Please log in again.");
+      }
+
+      // Calculate service fee (10% of maximum participants * ticket price)
+      const ticketPrice = parseFloat(formData.price) || 0;
+      const maxParticipants = parseInt(formData.maxParticipants) || 10; // Default to 10 if not specified
+      const serviceFee = Math.ceil(ticketPrice * maxParticipants * 0.1);
+
+      // Don't proceed if the event is free or the fee is too low
+      if (serviceFee <= 0) {
+        // For free events, skip payment
+        setPaymentStatus("success");
+        setPaymentDetails({
+          serviceFee: 0,
+          totalAmount: 0,
+          externalTrxId: "free-event",
+          timeStamp: new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Make payment request to our API
+      const response = await fetch("/api/organizer/events/payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: serviceFee.toString(),
+          userId,
+          eventDetails: {
+            title: formData.title,
+            price: formData.price,
+            maxParticipants: formData.maxParticipants,
+            eventType: formData.eventType,
+          },
+        }),
+      });
+
+      const paymentData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          paymentData.statusDetail || "Payment failed. Please try again."
+        );
+      }
+
+      if (paymentData.success && paymentData.statusCode === "S1000") {
+        setPaymentStatus("success");
+        setPaymentDetails({
+          serviceFee,
+          totalAmount: serviceFee,
+          externalTrxId: paymentData.externalTrxId,
+          timeStamp: paymentData.timeStamp,
+        });
+      } else {
+        throw new Error(
+          paymentData.statusDetail || "Payment failed. Please try again."
+        );
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      setPaymentStatus("error");
+      setPaymentError(error.message || "Payment failed. Please try again.");
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateStep(step)) {
+      return;
+    }
+
+    // Check if payment is needed and completed
+    const ticketPrice = parseFloat(formData.price) || 0;
+    if (ticketPrice > 0 && paymentStatus !== "success") {
+      setPaymentError("Please complete the payment before creating the event.");
       return;
     }
 
@@ -321,6 +438,7 @@ const CreateEventPage = () => {
         title: formData.title,
         price: formData.price,
         category: formData.category,
+        eventType: formData.eventType, // Add this field
         description: formData.description,
         location: formData.location,
         date: eventDate,
@@ -329,10 +447,21 @@ const CreateEventPage = () => {
         longitude: formData.longitude,
         images: imageUrls,
         createdAt: serverTimestamp(),
-        organizerId: userId, // Using the securely verified user ID
+        organizerId: userId,
         maxParticipants: formData.maxParticipants
           ? parseInt(formData.maxParticipants)
           : null,
+        // Add payment details if payment was required
+        payment:
+          ticketPrice > 0
+            ? {
+                serviceFee: paymentDetails.serviceFee,
+                paymentStatus: paymentStatus,
+                externalTrxId: paymentDetails.externalTrxId,
+                timeStamp: paymentDetails.timeStamp,
+                processedAt: serverTimestamp(),
+              }
+            : null,
       };
 
       await addDoc(collection(db, "events"), eventData);
@@ -537,6 +666,52 @@ const CreateEventPage = () => {
               <p className="mt-1 text-xs text-gray-500">
                 Leave blank for no limit
               </p>
+            </div>
+
+            {/* Event Type */}
+            <div>
+              <label
+                className="block text-sm font-medium text-gray-700 mb-1"
+                htmlFor="eventType"
+              >
+                Event Type
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                </div>
+                <select
+                  id="eventType"
+                  name="eventType"
+                  className={`pl-10 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent appearance-none ${
+                    errors.eventType ? "border-red-500" : "border-gray-300"
+                  }`}
+                  value={formData.eventType}
+                  onChange={handleChange}
+                >
+                  <option value="">Select event type</option>
+                  <option value="indoor">Indoor</option>
+                  <option value="outdoor">Outdoor</option>
+                </select>
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
+              {errors.eventType && (
+                <p className="mt-1 text-sm text-red-600">{errors.eventType}</p>
+              )}
             </div>
           </div>
         );
@@ -834,6 +1009,179 @@ const CreateEventPage = () => {
           </div>
         );
 
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold border-b border-gray-200 pb-2 mb-4">
+              Payment
+            </h2>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-4">
+              <h3 className="font-medium text-lg mb-4">Event Creation Fee</h3>
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Event Title:</span>
+                  <span className="font-medium">{formData.title}</span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Event Type:</span>
+                  <span className="font-medium capitalize">
+                    {formData.eventType}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Ticket Price:</span>
+                  <span className="font-medium">
+                    LKR {formData.price || "0"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Maximum Participants:</span>
+                  <span className="font-medium">
+                    {formData.maxParticipants || "No limit"}
+                  </span>
+                </div>
+
+                <div className="border-t border-gray-200 my-2 pt-2"></div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-700">Service Fee (10%):</span>
+                  <span className="font-bold">
+                    LKR{" "}
+                    {Math.ceil(
+                      (parseFloat(formData.price) || 0) *
+                        (parseInt(formData.maxParticipants) || 100) *
+                        0.1
+                    )}
+                  </span>
+                </div>
+
+                <p className="text-xs text-gray-500 mt-2">
+                  The service fee is 10% of the maximum potential revenue
+                  (Ticket Price × Max Participants)
+                </p>
+              </div>
+            </div>
+
+            {parseFloat(formData.price) === 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start">
+                  <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 mr-2" />
+                  <div>
+                    <h4 className="font-medium text-green-800">
+                      No Payment Required
+                    </h4>
+                    <p className="text-sm text-green-600">
+                      Since your event is free, no service fee is required.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {parseFloat(formData.price) > 0 && (
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="font-medium text-lg mb-4">Payment Status</h3>
+
+                {paymentStatus === "idle" && (
+                  <div className="flex flex-col items-center py-4">
+                    <p className="text-gray-700 mb-4">
+                      Please process payment to create your event
+                    </p>
+                    <button
+                      type="button"
+                      onClick={processPayment}
+                      disabled={paymentProcessing}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-black text-white rounded-lg hover:from-black hover:to-blue-600 transition-all shadow-lg transform hover:scale-105 flex items-center justify-center"
+                    >
+                      {paymentProcessing ? (
+                        <>
+                          <Loader size={16} className="animate-spin mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <span className="font-bold">Pay Now</span>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {paymentStatus === "processing" && (
+                  <div className="flex flex-col items-center py-8">
+                    <Loader
+                      size={32}
+                      className="animate-spin mb-4 text-blue-600"
+                    />
+                    <p className="text-gray-700">Processing payment...</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Please do not close this page
+                    </p>
+                  </div>
+                )}
+
+                {paymentStatus === "success" && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <CheckCircle className="h-6 w-6 text-green-500 mt-0.5 mr-3" />
+                      <div>
+                        <h4 className="font-medium text-green-800">
+                          Payment Successful
+                        </h4>
+                        <p className="text-sm text-green-600 mt-1">
+                          Your payment has been processed successfully. You can
+                          now create your event.
+                        </p>
+                        {paymentDetails.externalTrxId &&
+                          paymentDetails.externalTrxId !== "free-event" && (
+                            <p className="text-xs text-green-700 mt-2">
+                              Transaction ID: {paymentDetails.externalTrxId}
+                            </p>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentStatus === "error" && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start">
+                      <AlertTriangle className="h-6 w-6 text-red-500 mt-0.5 mr-3" />
+                      <div>
+                        <h4 className="font-medium text-red-800">
+                          Payment Failed
+                        </h4>
+                        <p className="text-sm text-red-600 mt-1">
+                          {paymentError ||
+                            "There was an error processing your payment. Please try again."}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={processPayment}
+                          disabled={paymentProcessing}
+                          className="mt-3 px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                        >
+                          Try Again
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-4 text-sm text-gray-600">
+              <p>
+                By creating this event, you agree to our Terms and Conditions
+                and Privacy Policy.
+              </p>
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -871,11 +1219,11 @@ const CreateEventPage = () => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         {/* Progress steps */}
         <div className="flex items-center mb-8">
-          {[1, 2, 3].map((stepNumber) => (
+          {[1, 2, 3, 4].map((stepNumber) => (
             <React.Fragment key={stepNumber}>
               <div
                 className={`flex flex-col items-center ${
-                  stepNumber < 3 ? "flex-grow" : ""
+                  stepNumber < 4 ? "flex-grow" : ""
                 }`}
               >
                 <div
@@ -894,11 +1242,13 @@ const CreateEventPage = () => {
                     ? "Details"
                     : stepNumber === 2
                     ? "Location"
-                    : "Images"}
+                    : stepNumber === 3
+                    ? "Images"
+                    : "Payment"}
                 </span>
               </div>
 
-              {stepNumber < 3 && (
+              {stepNumber < 4 && (
                 <div
                   className={`h-1 flex-grow mx-2 transition-colors ${
                     stepNumber < step ? "bg-green-500" : "bg-gray-200"
@@ -945,11 +1295,23 @@ const CreateEventPage = () => {
               >
                 Next
               </button>
+            ) : step === 3 ? (
+              <button
+                type="button"
+                onClick={nextStep}
+                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors"
+              >
+                Next
+              </button>
             ) : (
               <button
                 type="submit"
                 className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors flex items-center"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  (parseFloat(formData.price) > 0 &&
+                    paymentStatus !== "success")
+                }
               >
                 {loading ? (
                   <>
