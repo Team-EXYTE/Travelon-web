@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
     // 1. Get session cookie to securely identify the logged-in user
     const cookieStore = cookies();
-    const sessionCookie = cookieStore.get("session")?.value;
+    const sessionCookie = (await cookieStore).get("session")?.value;
 
     if (!sessionCookie) {
       return NextResponse.json(
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     let userEmail: string;
     try {
       const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
-      userEmail = decodedClaims.email;
+      userEmail = decodedClaims.email || "";
 
       if (!userEmail) {
         throw new Error("No email associated with this session.");

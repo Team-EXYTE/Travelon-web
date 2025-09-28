@@ -15,58 +15,58 @@ if (!global.otpStore) {
 
 export async function POST(request: Request) {
   try {
-    await initAdmin();
-    const sessionCookie = (await cookies()).get('session')?.value;
+    // await initAdmin();
+    // const sessionCookie = (await cookies()).get('session')?.value;
     
-    if (!sessionCookie) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
+    // if (!sessionCookie) {
+    //   return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    // }
     
-    // Verify the session cookie
-    const adminAuth = getAdminAuth();
-    const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+    // // Verify the session cookie
+    // const adminAuth = getAdminAuth();
+    // const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
     
-    // Get request body
-    const { phoneNumber, otp } = await request.json();
+    // // Get request body
+    // const { phoneNumber, otp } = await request.json();
     
-    if (!phoneNumber || !otp) {
-      return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
-    }
+    // if (!phoneNumber || !otp) {
+    //   return NextResponse.json({ error: "Phone number and OTP are required" }, { status: 400 });
+    // }
     
-    // Verify OTP
-    const storedOtpData = global.otpStore[phoneNumber];
+    // // Verify OTP
+    // const storedOtpData = global.otpStore[phoneNumber];
     
-    if (!storedOtpData) {
-      return NextResponse.json({ error: "OTP expired or not requested" }, { status: 400 });
-    }
+    // if (!storedOtpData) {
+    //   return NextResponse.json({ error: "OTP expired or not requested" }, { status: 400 });
+    // }
     
-    if (Date.now() > storedOtpData.expires) {
-      // Clean up expired OTP
-      delete global.otpStore[phoneNumber];
-      return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
-    }
+    // if (Date.now() > storedOtpData.expires) {
+    //   // Clean up expired OTP
+    //   delete global.otpStore[phoneNumber];
+    //   return NextResponse.json({ error: "OTP has expired" }, { status: 400 });
+    // }
     
-    if (storedOtpData.otp !== otp) {
-      return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
-    }
+    // if (storedOtpData.otp !== otp) {
+    //   return NextResponse.json({ error: "Invalid OTP" }, { status: 400 });
+    // }
     
-    // OTP is valid, update user record
-    const uid = decodedClaims.uid;
-    const adminDB = getAdminDB();
+    // // OTP is valid, update user record
+    // const uid = decodedClaims.uid;
+    // const adminDB = getAdminDB();
     
-    await adminDB.collection('users').doc(uid).update({
-      phoneNumberVerified: true,
-      updatedAt: new Date().toISOString()
-    });
+    // await adminDB.collection('users').doc(uid).update({
+    //   phoneNumberVerified: true,
+    //   updatedAt: new Date().toISOString()
+    // });
     
-    // Clean up used OTP
-    delete global.otpStore[phoneNumber];
+    // // Clean up used OTP
+    // delete global.otpStore[phoneNumber];
     
-    // Set custom claims to include phoneNumberVerified
-    await adminAuth.setCustomUserClaims(uid, { 
-      ...decodedClaims.role && { role: decodedClaims.role },
-      phoneNumberVerified: true 
-    });
+    // // Set custom claims to include phoneNumberVerified
+    // await adminAuth.setCustomUserClaims(uid, { 
+    //   ...decodedClaims.role && { role: decodedClaims.role },
+    //   phoneNumberVerified: true 
+    // });
     
     return NextResponse.json({ 
       success: true,

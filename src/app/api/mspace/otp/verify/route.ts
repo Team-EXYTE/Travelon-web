@@ -74,6 +74,17 @@ export async function POST(request: Request) {
 
     const sessionData = sessionDoc.data();
 
+    if (!sessionData) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid session data. Please request a new OTP.",
+          code: "INVALID_SESSION_DATA",
+        },
+        { status: 400 }
+      );
+    }
+
     // Check if session is expired
     if (new Date() > new Date(sessionData.expiresAt)) {
       await sessionDoc.ref.update({
@@ -150,8 +161,14 @@ export async function POST(request: Request) {
       status: "verified",
       verifiedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      maskedSubscriberId, // Store the masked subscriber ID
+      mspaceSubscriptionStatus: subscriptionStatus,
       mspaceResponse: result, // Store the complete response for reference
     });
+
+    // Determine which user collection to use based on session data
+    const userType = sessionData.userType || "organizer"; // Default for backward compatibility
+    const userCollection = userType === "organizer" ? "users" : "users-travellers";
 
     // Update subscription status
     try {
@@ -175,7 +192,7 @@ export async function POST(request: Request) {
 
       // Update user if exists
       const userQuery = await adminDB
-        .collection("users")
+        .collection(userCollection)
         .where("phoneNumber", "==", sessionData.phone)
         .limit(1)
         .get();
@@ -201,6 +218,7 @@ export async function POST(request: Request) {
       subscriberId: maskedSubscriberId, // Return the masked subscriber ID to the client
       subscriptionStatus,
       phone: sessionData.phone,
+      userType: sessionData.userType || "organizer", // Return the user type
       token: sessionId, // Return the session ID as a token for client-side tracking
     });
   } catch (error: any) {
