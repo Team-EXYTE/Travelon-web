@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { initAdmin, getAdminDB } from "@/db/firebaseAdmin";
+import { initAdmin, getAdminDB, getAdminAuth } from "@/db/firebaseAdmin";
+import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
   try {
@@ -7,30 +8,34 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const timeRange = url.searchParams.get("timeRange") || "30days";
 
-    // Get the current user
-    const authResponse = await fetch(
-      new URL("/api/auth/me", url.origin).toString(),
-      {
-        headers: request.headers,
-      }
-    );
+    const cookieStore = cookies();
+    const sessionCookie = (await cookieStore).get("session")?.value;
 
-    if (!authResponse.ok) {
+    if (!sessionCookie) {
       return NextResponse.json(
-        { error: "Authentication failed" },
+        { error: "Authentication required" },
         { status: 401 }
       );
     }
 
-    const authData = await authResponse.json();
-    const userId = authData.user?.uid;
+    // Initialize Firebase Admin
+    await initAdmin();
+    const adminDB = getAdminDB();
+    const auth = getAdminAuth();
+
+    // Verify session cookie
+    let userId;
+    try {
+      const decodedClaims = await auth.verifySessionCookie(sessionCookie);
+      userId = decodedClaims.uid;
+    } catch (error) {
+      console.error("Invalid session cookie:", error);
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
 
     if (!userId) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    await initAdmin();
-    const adminDB = getAdminDB();
 
     // Calculate the start date based on time range
     const now = new Date();
@@ -109,12 +114,12 @@ export async function GET(request: Request) {
     eventsSnapshot.docs.forEach((doc) => {
       const event: Event = { id: doc.id, ...(doc.data() as any) };
 
-      console.log(`Processing event ${event.id}:`, {
-        title: event.title,
-        dateType: typeof event.date,
-        dateValue: event.date,
-        hasSeconds: typeof event.date === "object" && "seconds" in event.date,
-      });
+    //   console.log(`Processing event ${event.id}:`, {
+    //     title: event.title,
+    //     dateType: typeof event.date,
+    //     dateValue: event.date,
+    //     hasSeconds: typeof event.date === "object" && "seconds" in event.date,
+    //   });
 
       totalEvents++;
 
