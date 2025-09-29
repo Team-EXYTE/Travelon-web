@@ -312,7 +312,7 @@ export default function EventsPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-16">
           <div 
             className="bg-white rounded-lg max-w-md w-full overflow-hidden shadow-xl" // Removed p-6, added overflow-hidden
             onClick={(e) => e.stopPropagation()}
@@ -328,7 +328,7 @@ export default function EventsPage() {
               {/* Removed the black overlay div */}
             </div>
             
-            <div className="p-6">
+            <div className="p-6 pt-8">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
                 <AlertTriangle size={24} className="text-red-600" />
               </div>
@@ -357,7 +357,7 @@ export default function EventsPage() {
 
       {/* Event Details Modal */}
       {isEventModalOpen && selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={closeEventModal}>
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-16" onClick={closeEventModal}>
           <div 
             className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
             onClick={(e) => e.stopPropagation()}
@@ -403,7 +403,7 @@ export default function EventsPage() {
               </div>
             )}
             
-            <div className="p-6">
+            <div className="p-6 pt-8">
               {/* Event Header */}
               <div className="mb-6">
                 <div className="flex items-start justify-between mb-4">
