@@ -84,7 +84,7 @@ export default function OrganizerLayout({
           <div className="flex items-center justify-between p-4 border-b border-gray-800">
             {/* Logo - full size when expanded */}
             <Link
-              href="/organizer"
+              href="/"
               className={`flex items-center ${
                 isSidebarCollapsed ? "hidden md:flex" : ""
               }`}
