@@ -31,7 +31,16 @@ const TravelersFeatures = () => {
   ];
 
   return (
-    <section className="py-8 md:py-12 min-h-screen bg-white relative">
+    <section className="min-h-screen bg-white flex items-center justify-center relative overflow-hidden px-4 md:px-6">
+            <div
+        className="absolute inset-0 z-0 opacity-10"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0,0 C30,10 70,10 100,0 L100,100 C70,90 30,90 0,100 Z' stroke='%23000000' fill='none' stroke-width='0.5' stroke-dasharray='4 3' /%3E%3Cpath d='M0,50 C30,40 70,60 100,50' stroke='%23000000' fill='none' stroke-width='0.5' stroke-dasharray='4 3' /%3E%3Cpath d='M0,0 Q25,25 50,50 Q75,75 100,100' stroke='%23000000' fill='none' stroke-width='0.5' stroke-dasharray='4 3' /%3E%3Cpath d='M100,0 Q75,25 50,50 Q25,75 0,100' stroke='%23000000' fill='none' stroke-width='0.5' stroke-dasharray='4 3' /%3E%3C/svg%3E")`,
+          backgroundSize: "300px 300px",
+          backgroundPosition: "center",
+          transform: "rotate(5deg) scale(1.5)",
+        }}
+      ></div>
       <div className="max-w-6xl mx-auto px-4 md:px-6">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black mb-4 md:mb-6">

@@ -379,8 +379,11 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
                     (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                   console.log(`Upload progress: ${progress.toFixed(2)}%`);
                 },
-                reject,
-                resolve
+                (error) => {
+                  console.error("Upload error:", error);
+                  reject(error);
+                },
+                () => resolve(undefined)
               );
             });
 
@@ -453,6 +456,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <p className="ml-2 text-gray-600">Loading your event...</p>
       </div>
     );
   }

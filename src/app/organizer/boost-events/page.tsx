@@ -296,12 +296,16 @@ export default function BoostEventsPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader className="h-8 w-8 animate-spin text-gray-500" />
-          <span className="ml-3 text-lg text-gray-600">
-            Loading your events...
-          </span>
-        </div>
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <p className="ml-2 text-gray-600">Loading your events...</p>
+      </div>
+        // <div className="flex justify-center items-center py-12">
+        //   <Loader className="h-8 w-8 animate-spin text-gray-500" />
+        //   <span className="ml-3 text-lg text-gray-600">
+        //     Loading your events...
+        //   </span>
+        // </div>
       ) : error ? (
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />

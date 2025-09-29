@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  CheckCircle,
-  XCircle,
-  Calendar,
-  Users,
-  X,
-  Info,
-} from "lucide-react";
+import { CheckCircle, XCircle, Calendar, Users, X, Info } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,17 +26,22 @@ const statusStyles: Record<string, string> = {
 const PaymentsPage: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [showBankNotification, setShowBankNotification] = useState(true); // State to control notification visibility
+  const [showBankNotification, setShowBankNotification] = useState(true);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchPayments = async () => {
       try {
+        setLoading(true); // Set loading to true before fetching data
         const res = await fetch("/api/organizer/payments");
         if (!res.ok) throw new Error("Failed to fetch payments");
         const data = await res.json();
         setPayments(Array.isArray(data.payments) ? data.payments : []);
       } catch (err) {
+        console.error("Error fetching payments:", err);
         setPayments([]);
+      } finally {
+        setLoading(false); // Set loading to false after fetching completes
       }
     };
     fetchPayments();
@@ -70,7 +68,7 @@ const PaymentsPage: React.FC = () => {
     if (filterStatus === "ongoing") return payment.paymentStatus === "Ongoing";
     return payment.paymentStatus.toLowerCase() === filterStatus;
   });
-  console.log("Filtered Payments:", filteredPayments);
+
   // Modal state
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedOngoing, setSelectedOngoing] = useState<string>("");
@@ -79,6 +77,16 @@ const PaymentsPage: React.FC = () => {
   const ongoingPayments = sortedPayments.filter(
     (p) => p.paymentStatus === "Ongoing"
   );
+
+  // Display loading state
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <p className="mt-4 text-gray-600">Loading your payment history...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-0">
@@ -237,85 +245,111 @@ const PaymentsPage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-sm">
-              <th className="py-3 px-4 text-left font-semibold">Photo</th>
-              <th className="py-3 px-4 text-left font-semibold">Event Name</th>
-              <th className="py-3 px-4 text-center font-semibold">Date</th>
-              <th className="py-3 px-4 text-center font-semibold">
-                Participants
-              </th>
-              <th className="py-3 px-4 text-center font-semibold">
-                Ticket Price ($)
-              </th>
-              <th className="py-3 px-4 text-center font-semibold">Status</th>
-              <th className="py-3 px-4 text-center font-semibold">
-                Total Payment ($)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPayments.map((payment, idx) => (
-              <tr
-                key={idx}
-                className="border-b last:border-b-0 hover:bg-gray-50 transition-colors"
-              >
-                <td className="py-3 px-4">
-                  <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                    <Image
-                      src={
-                        payment.images && payment.images.length > 0
-                          ? payment.images[0]
-                          : "/SriLanks.webp"
-                      }
-                      alt={payment.eventName}
-                      width={48}
-                      height={48}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                </td>
-                <td className="py-3 px-4 flex items-center gap-2">
-                  <Users size={18} className="text-gray-400" />
-                  <span className="font-medium text-gray-800">
-                    {payment.eventName}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-center text-gray-700">
-                  {formatDate(payment.createdAt)}
-                </td>
-                <td className="py-3 px-4 text-center text-gray-700 font-semibold">
-                  {payment.participantCount}
-                </td>
-                <td className="py-3 px-4 text-center text-gray-700">
-                  {payment.ticketPrice}
-                </td>
-                <td className="py-3 px-4 text-center">
-                  <span
-                    className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-medium ${
-                      statusStyles[payment.paymentStatus]
-                    }`}
-                  >
-                    {payment.paymentStatus === "Completed" ? (
-                      <CheckCircle size={14} className="text-green-500" />
-                    ) : payment.paymentStatus === "Pending" ? (
-                      <XCircle size={14} className="text-yellow-500" />
-                    ) : (
-                      <span className="w-3 h-3 rounded-full bg-blue-400 inline-block mr-1"></span>
-                    )}
-                    {payment.paymentStatus}
-                  </span>
-                </td>
-                <td className="py-3 px-4 text-center font-bold text-black">
-                  {payment.ticketPrice * payment.participantCount}
-                </td>
+      {/* Display empty state if no payments are available */}
+      {!loading && filteredPayments.length === 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            No payments found
+          </h3>
+          <p className="text-gray-500 mb-6">
+            {filterStatus === "all"
+              ? "You don't have any payments yet."
+              : `You don't have any ${filterStatus} payments.`}
+          </p>
+          <Link
+            href="/organizer/create-event"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md bg-black text-white hover:bg-gray-800 transition-all"
+          >
+            Create an event to get started
+          </Link>
+        </div>
+      )}
+
+      {/* Display payment table if there are payments */}
+      {!loading && filteredPayments.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <table className="min-w-full">
+            <thead>
+              <tr className="bg-gray-100 text-gray-700 text-sm">
+                <th className="py-3 px-4 text-left font-semibold">Photo</th>
+                <th className="py-3 px-4 text-left font-semibold">
+                  Event Name
+                </th>
+                <th className="py-3 px-4 text-center font-semibold">Date</th>
+                <th className="py-3 px-4 text-center font-semibold">
+                  Participants
+                </th>
+                <th className="py-3 px-4 text-center font-semibold">
+                  Ticket Price ($)
+                </th>
+                <th className="py-3 px-4 text-center font-semibold">Status</th>
+                <th className="py-3 px-4 text-center font-semibold">
+                  Total Payment ($)
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {filteredPayments.map((payment, idx) => (
+                <tr
+                  key={idx}
+                  className="border-b last:border-b-0 hover:bg-gray-50 transition-colors"
+                >
+                  <td className="py-3 px-4">
+                    <div className="h-12 w-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                      <Image
+                        src={
+                          payment.images && payment.images.length > 0
+                            ? payment.images[0]
+                            : "/SriLanks.webp"
+                        }
+                        alt={payment.eventName}
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 flex items-center gap-2">
+                    <Users size={18} className="text-gray-400" />
+                    <span className="font-medium text-gray-800">
+                      {payment.eventName}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center text-gray-700">
+                    {formatDate(payment.createdAt)}
+                  </td>
+                  <td className="py-3 px-4 text-center text-gray-700 font-semibold">
+                    {payment.participantCount}
+                  </td>
+                  <td className="py-3 px-4 text-center text-gray-700">
+                    {payment.ticketPrice}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <span
+                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border text-xs font-medium ${
+                        statusStyles[payment.paymentStatus]
+                      }`}
+                    >
+                      {payment.paymentStatus === "Completed" ? (
+                        <CheckCircle size={14} className="text-green-500" />
+                      ) : payment.paymentStatus === "Pending" ? (
+                        <XCircle size={14} className="text-yellow-500" />
+                      ) : (
+                        <span className="w-3 h-3 rounded-full bg-blue-400 inline-block mr-1"></span>
+                      )}
+                      {payment.paymentStatus}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-center font-bold text-black">
+                    {payment.ticketPrice * payment.participantCount}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
