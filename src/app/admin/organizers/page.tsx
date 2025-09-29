@@ -119,10 +119,10 @@ export default function OrganizersPage() {
   };
 
   // Open OTP verification modal
-  const openOtpVerificationModal = (organizer: any) => {
-    setOrganizerToVerify(organizer);
-    setIsOtpModalOpen(true);
-  };
+  // const openOtpVerificationModal = (organizer: any) => {
+  //   setOrganizerToVerify(organizer);
+  //   setIsOtpModalOpen(true);
+  // };
 
   // Handle OTP verification success
   const handleVerificationSuccess = async (data: any) => {
@@ -282,7 +282,7 @@ export default function OrganizersPage() {
                                   <Check size={16} className="mr-2 text-green-500" />
                                   Verify Directly
                                 </button>
-                                <button
+                                {/* <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     openOtpVerificationModal(organizer);
@@ -291,7 +291,7 @@ export default function OrganizersPage() {
                                 >
                                   <Check size={16} className="mr-2 text-blue-500" />
                                   Verify via OTP
-                                </button>
+                                </button> */}
                               </>
                             )}
                             <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
@@ -509,7 +509,7 @@ export default function OrganizersPage() {
                     >
                       Verify Directly
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => {
                         closeOrganizerModal();
                         openOtpVerificationModal(selectedOrganizer);
@@ -517,7 +517,7 @@ export default function OrganizersPage() {
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none"
                     >
                       Verify via OTP
-                    </button>
+                    </button> */}
                   </>
                 ) : (
                   <button
