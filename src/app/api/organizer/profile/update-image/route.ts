@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { initAdmin, getAdminDB } from "@/db/firebaseAdmin";
+import { initAdmin, getAdminDB, getAdminAuth } from "@/db/firebaseAdmin";
+import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
@@ -13,31 +14,35 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get the current user ID from the auth endpoint
-    const authResponse = await fetch(
-      new URL("/api/auth/me", request.url).toString(),
-      {
-        headers: request.headers,
-      }
-    );
+    // FIXED: Use server-side auth verification with cookies instead of fetch
+    const cookieStore = cookies();
+    const sessionCookie = (await cookieStore).get("session")?.value;
 
-    if (!authResponse.ok) {
+    if (!sessionCookie) {
       return NextResponse.json(
-        { error: "Authentication failed" },
+        { error: "Authentication required" },
         { status: 401 }
       );
-    }
-
-    const authData = await authResponse.json();
-    const userId = authData.user?.uid;
-
-    if (!userId) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Initialize Firebase Admin
     await initAdmin();
     const adminDB = getAdminDB();
+    const auth = getAdminAuth();
+
+    // Verify session cookie
+    let userId;
+    try {
+      const decodedClaims = await auth.verifySessionCookie(sessionCookie);
+      userId = decodedClaims.uid;
+    } catch (error) {
+      console.error("Invalid session cookie:", error);
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
+
+    if (!userId) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
 
     // Update user profile with the image URL
     await adminDB.collection("users").doc(userId).update({
