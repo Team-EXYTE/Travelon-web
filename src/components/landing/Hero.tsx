@@ -41,7 +41,7 @@ const Hero = () => {
       <div className="absolute left-[10%] top-1/8 -translate-x-1/4 hidden sm:block z-10">
         <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 lg:w-96 lg:h-96">
           <div
-            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-black"
+            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-orange-500"
             style={{ animation: "spin 40s linear infinite" }}
           ></div>
           <div className="rounded-full overflow-hidden h-full w-full">
@@ -60,7 +60,7 @@ const Hero = () => {
       <div className="absolute right-[15%] bottom-[50%] translate-x-1/4 hidden sm:block z-10">
         <div className="relative w-36 h-36 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-72 lg:h-72">
           <div
-            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-black"
+            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-orange-500"
             style={{ animation: "spin-reverse 25s linear infinite" }}
           ></div>
           <div className="rounded-full overflow-hidden h-full w-full">
@@ -79,7 +79,7 @@ const Hero = () => {
       <div className="absolute right-[10%] bottom-[5%] translate-x-1/4 hidden sm:block z-10">
         <div className="relative w-12 h-12 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-40 lg:h-40">
           <div
-            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-black"
+            className="absolute inset-[-8px] rounded-full border-2 border-dashed border-orange-500"
             style={{ animation: "spin-reverse 25s linear infinite" }}
           ></div>
           <div className="rounded-full overflow-hidden h-full w-full">
@@ -123,22 +123,22 @@ const Hero = () => {
           />
         </div> */}
 
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-black mb-4 md:mb-6 leading-tight">
-          Connect.
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 md:mb-6 leading-tight">
+          <span className="bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent">Connect.</span>
           <br />
-          <span className="text-gray-600">Explore.</span>
+          <span className="bg-gradient-to-r from-orange-400 to-orange-700 bg-clip-text text-transparent">Explore.</span>
           <br />
-          Experience.
+          <span className="bg-gradient-to-r from-black to-gray-800 bg-clip-text text-transparent">Experience.</span>
         </h1>
 
-        <p className="text-lg sm:text-xl md:text-2xl text-gray-700 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-lg sm:text-xl md:text-2xl mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed bg-gradient-to-r from-gray-700 to-gray-600 bg-clip-text text-transparent">
           The ultimate platform connecting passionate travelers with creative
           event organizers. Discover unique experiences and create unforgettable
           memories.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center">
-          <button className="w-full sm:w-auto group bg-black text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-gray-800 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-lg font-medium">
+          <button className="w-full sm:w-auto group bg-black text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-orange-500 transition-all duration-300 flex items-center justify-center gap-2 sm:gap-3 text-base sm:text-lg font-medium">
             Start Exploring
             <ArrowRight
               size={18}
@@ -146,17 +146,12 @@ const Hero = () => {
             />
           </button>
 
-          <button className="w-full sm:w-auto border-2 border-black text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-black hover:text-white transition-all duration-300 text-base sm:text-lg font-medium"
+          <button className="w-full sm:w-auto border-2 border-black text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all duration-300 text-base sm:text-lg font-medium"
           onClick={()=> router.push('/auth/signup/')}>
             Organize Events
           </button>
         </div>
       </div>
-
-      {/* Responsive decorative elements */}
-      <div className="absolute top-10 sm:top-20 left-5 sm:left-20 w-2 h-2 bg-black rounded-full animate-pulse z-20"></div>
-      <div className="absolute bottom-16 sm:bottom-32 left-8 sm:right-32 w-3 h-3 bg-gray-400 rounded-full animate-pulse delay-700 z-20"></div>
-      <div className="absolute top-1/2 right-4 sm:right-16 w-1 h-1 bg-black rounded-full animate-pulse delay-1000 z-20"></div>
 
       {/* Login button - top right on mobile, bottom left on desktop */}
       <div className="fixed top-0 right-0 sm:top-auto sm:bottom-0 sm:left-0 sm:right-auto z-50">
