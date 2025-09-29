@@ -306,9 +306,9 @@ export default function TravelersPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-16">
           <div 
-            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl"
+            className="bg-white rounded-lg max-w-md w-full p-6 pt-8 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
