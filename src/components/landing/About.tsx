@@ -56,11 +56,10 @@ const About = () => {
             </div>
             
             <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-white group-hover:text-orange-200 transition-colors duration-300">
-              Global Reach
+              Local Reach
             </h3>
             <p className="text-gray-400 leading-relaxed text-sm md:text-base group-hover:text-gray-300 transition-colors duration-300">
-              Connect with travelers and organizers from around the world,
-              expanding your network and discovering diverse cultures.
+              Connect with travelers and organizers across Sri Lanka to expand your network and immerse yourself in diverse cultures.
             </p>
           </div>
 

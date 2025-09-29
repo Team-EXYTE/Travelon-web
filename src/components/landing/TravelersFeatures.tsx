@@ -12,9 +12,9 @@ const TravelersFeatures = () => {
     },
     {
       icon: Heart,
-      title: "Personalized Recommendations",
+      title: "Find Your Interest",
       description:
-        "Get tailored suggestions based on your preferences, past experiences, and travel history.",
+        "Choose from diverse event categories tailored to your preferences - arts & culture, food, music, and more.",
     },
     {
       icon: Shield,
@@ -24,9 +24,9 @@ const TravelersFeatures = () => {
     },
     {
       icon: MessageCircle,
-      title: "Connect with Locals",
+      title: "Share Your Journey",
       description:
-        "Chat directly with organizers and fellow travelers to enhance your experience.",
+        "Post your travel experiences and watch other travelers' adventures through our dashboard.",
     },
   ];
 

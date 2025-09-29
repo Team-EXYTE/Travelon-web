@@ -153,7 +153,7 @@ const JoinSection = () => {
 
               {/* Content section */}
               <div className="lg:w-3/5">
-                <p className="text-gray-300 mb-3 md:mb-4 text-sm md:text-base leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
+                <p className="text-gray-300 mb-4 md:mb-6 text-base md:text-lg leading-relaxed group-hover:text-gray-200 transition-colors duration-300">
                   Share your passion, build your business, and create
                   extraordinary experiences for travelers around the world.
                 </p>
