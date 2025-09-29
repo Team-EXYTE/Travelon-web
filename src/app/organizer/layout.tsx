@@ -5,11 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Menu,
-  X,
   User,
-  Home,
   Calendar,
-  Settings,
   LogOut,
   MapPin,
   BarChart,
@@ -125,19 +122,21 @@ export default function OrganizerLayout({
             <ul className="space-y-1">
               <li>
                 <Link
-                  href="/organizer"
+                  href="/organizer/dashboard"
                   className={`flex items-center ${
                     isSidebarCollapsed ? "justify-center px-0" : "px-4"
                   } py-3 rounded-lg transition-colors ${
-                    pathname === "/organizer"
+                    pathname === "/organizer/dashboard"
                       ? "bg-white text-black"
                       : "text-white hover:bg-gray-800"
                   }`}
-                  title="Dashboard"
+                  title="Analytics Dashboard"
                 >
-                  <Home
+                  <BarChart
                     className={`h-5 w-5 ${!isSidebarCollapsed && "mr-3"} ${
-                      pathname === "/organizer" ? "text-black" : "text-white"
+                      pathname === "/organizer/dashboard"
+                        ? "text-black"
+                        : "text-white"
                     }`}
                   />
                   {!isSidebarCollapsed && "Dashboard"}
@@ -229,28 +228,6 @@ export default function OrganizerLayout({
                     }`}
                   />
                   {!isSidebarCollapsed && "Boost Events"}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/organizer/analytics"
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? "justify-center px-0" : "px-4"
-                  } py-3 rounded-lg transition-colors ${
-                    pathname === "/organizer/analytics"
-                      ? "bg-white text-black"
-                      : "text-white hover:bg-gray-800"
-                  }`}
-                  title="Analytics"
-                >
-                  <BarChart
-                    className={`h-5 w-5 ${!isSidebarCollapsed && "mr-3"} ${
-                      pathname === "/organizer/analytics"
-                        ? "text-black"
-                        : "text-white"
-                    }`}
-                  />
-                  {!isSidebarCollapsed && "Analytics"}
                 </Link>
               </li>
               <li>

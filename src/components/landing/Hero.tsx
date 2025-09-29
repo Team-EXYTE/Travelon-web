@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { ArrowRight, MapPin, LogIn, X } from "lucide-react";
+import { ArrowRight, LogIn, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Hero = () => {
   // State to control login hint visibility
   const [showLoginHint, setShowLoginHint] = useState(false);
+  const router = useRouter();
 
   // Show the login hint after a short delay when component mounts
   useEffect(() => {
@@ -144,7 +146,8 @@ const Hero = () => {
             />
           </button>
 
-          <button className="w-full sm:w-auto border-2 border-black text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-black hover:text-white transition-all duration-300 text-base sm:text-lg font-medium">
+          <button className="w-full sm:w-auto border-2 border-black text-black px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-black hover:text-white transition-all duration-300 text-base sm:text-lg font-medium"
+          onClick={()=> router.push('/auth/signup/')}>
             Organize Events
           </button>
         </div>

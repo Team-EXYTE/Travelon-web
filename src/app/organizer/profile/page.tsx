@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   User,
   Building2,
@@ -13,11 +13,17 @@ import {
   CheckCircle,
   XCircle,
   CreditCard,
+  Upload,
+  Loader,
 } from "lucide-react";
 import OtpVerificationModal from "@/components/OtpVerificationModal";
 import ProfileEditModal from "@/components/ProfileEditModal";
 import BankDetailsModal, { BankDetails } from "@/components/BankDetailsModal";
+import Image from "next/image";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { storage } from "@/db/firebaseClient";
 
+// Update UserProfile interface to include profileImage
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -31,6 +37,7 @@ interface UserProfile {
   phoneNumberVerified: boolean;
   updatedAt: string;
   subscriptionStatus?: string;
+  profileImage?: string; // Add this for profile image
   bankDetails?: {
     bankName: string;
     bankCode: string;
@@ -51,6 +58,19 @@ const ProfilePage = () => {
   const [showBankModal, setShowBankModal] = useState(false); // New state
   const [verifying, setVerifying] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Add these states for image handling
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
+    null
+  );
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Constants for image validation
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
   // Fetch profile data
   const fetchProfile = async () => {
@@ -142,10 +162,111 @@ const ProfilePage = () => {
     }
   };
 
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageError(null);
+
+    if (!e.target.files?.length) return;
+
+    const file = e.target.files[0];
+
+    // Validate file type
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setImageError(
+        "Invalid file type. Please upload JPEG, PNG, or WebP image."
+      );
+      return;
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setImageError("Image too large. Maximum size is 5MB.");
+      return;
+    }
+
+    // Create preview and set file
+    setProfileImageFile(file);
+    setProfileImagePreview(URL.createObjectURL(file));
+  };
+
+  // Upload profile image
+  const uploadProfileImage = async () => {
+    if (!profileImageFile || !profile) return;
+
+    try {
+      setUploadingImage(true);
+      setImageError(null);
+
+      // Create unique filename
+      const filename = `profile_${
+        profile.username
+      }_${Date.now()}.${profileImageFile.name.split(".").pop()}`;
+      const storageRef = ref(storage, `users-organizers/${filename}`);
+
+      // Upload image
+      const uploadTask = uploadBytesResumable(storageRef, profileImageFile);
+
+      // Monitor upload with progress tracking
+      await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log(`Upload progress: ${progress.toFixed(2)}%`);
+          },
+          (error) => {
+            console.error("Upload error:", error);
+            reject(error);
+          },
+          () => resolve(undefined)
+        );
+      });
+
+      // Get download URL
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Save profile image URL to database
+      const response = await fetch("/api/organizer/profile/update-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ profileImage: downloadURL }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update profile image");
+      }
+
+      // Update local state
+      const data = await response.json();
+      setProfile(data.user);
+
+      // Show success message
+      setSuccessMessage("Profile image updated successfully!");
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+    } catch (err: any) {
+      console.error("Error updating profile image:", err);
+      setImageError(err.message || "Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   if (loading && !profile) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+        <p className="ml-2 text-gray-600">Loading Profile data...</p>
       </div>
     );
   }
@@ -238,6 +359,15 @@ const ProfilePage = () => {
         initialDetails={profile?.bankDetails}
       />
 
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".jpg,.jpeg,.png,.webp"
+        className="hidden"
+      />
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
         <button
@@ -254,9 +384,70 @@ const ProfilePage = () => {
         <div className="md:col-span-1">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex flex-col items-center">
-              <div className="relative h-24 w-24 rounded-full bg-gray-100 mb-4 flex items-center justify-center">
-                <User size={40} className="text-gray-400" />
+              <div className="relative">
+                <div className="h-24 w-24 rounded-full overflow-hidden bg-gray-100 mb-4">
+                  {profileImagePreview ? (
+                    <Image
+                      src={profileImagePreview}
+                      alt="Profile preview"
+                      width={96}
+                      height={96}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : profile?.profileImage ? (
+                    <Image
+                      src={profile.profileImage}
+                      alt={`${profile.firstName} ${profile.lastName}`}
+                      width={96}
+                      height={96}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center">
+                      <User size={40} className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Image upload button */}
+                <button
+                  onClick={triggerFileInput}
+                  className="absolute bottom-3 right-0 bg-black text-white p-1.5 rounded-full hover:bg-gray-700 transition-colors"
+                  title="Change profile picture"
+                >
+                  <Edit size={14} />
+                </button>
               </div>
+
+              {/* Display upload button when a new image is selected */}
+              {profileImagePreview && (
+                <div className="mb-4 w-full">
+                  <button
+                    onClick={uploadProfileImage}
+                    disabled={uploadingImage}
+                    className="w-full flex items-center justify-center gap-2 bg-black text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <Loader size={14} className="animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={14} />
+                        Upload Image
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Display image error if any */}
+              {imageError && (
+                <div className="mb-4 text-xs text-red-500 text-center">
+                  {imageError}
+                </div>
+              )}
 
               <h2 className="text-xl font-semibold">
                 {profile.firstName} {profile.lastName}
