@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Users, Search, MoreHorizontal,  Trash2, AlertTriangle, Check, X } from "lucide-react";
 // Edit,
 import { useOrganizers } from "@/hooks/useOrganizers";
+import OtpVerificationModal from "@/components/OtpVerificationModal";
 export default function OrganizersPage() {
   const { data, loading, error, updateOrganizerStatus, deleteOrganizer } = useOrganizers();
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -20,6 +21,10 @@ export default function OrganizersPage() {
   // State for organizer details modal
   const [selectedOrganizer, setSelectedOrganizer] = useState<any>(null);
   const [isOrganizerModalOpen, setIsOrganizerModalOpen] = useState(false);
+  
+  // State for OTP verification modal
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const [organizerToVerify, setOrganizerToVerify] = useState<any>(null);
 
   if (loading) {
     return (
@@ -111,6 +116,24 @@ export default function OrganizersPage() {
   const closeOrganizerModal = () => {
     setSelectedOrganizer(null);
     setIsOrganizerModalOpen(false);
+  };
+
+  // Open OTP verification modal
+  const openOtpVerificationModal = (organizer: any) => {
+    setOrganizerToVerify(organizer);
+    setIsOtpModalOpen(true);
+  };
+
+  // Handle OTP verification success
+  const handleVerificationSuccess = async (data: any) => {
+    // Update the organizer status to verified
+    if (organizerToVerify) {
+      try {
+        await updateOrganizerStatus(organizerToVerify.id, true);
+      } catch (error: any) {
+        alert(error.message);
+      }
+    }
   };
 
   // Sample organizer data
@@ -251,13 +274,25 @@ export default function OrganizersPage() {
                                 Mark as Pending
                               </button>
                             ) : (
-                              <button
-                                onClick={() => handleStatusUpdate(organizer.id, true)}
-                                className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <Check size={16} className="mr-2 text-green-500" />
-                                Verify Organizer
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleStatusUpdate(organizer.id, true)}
+                                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  <Check size={16} className="mr-2 text-green-500" />
+                                  Verify Directly
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openOtpVerificationModal(organizer);
+                                  }}
+                                  className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                >
+                                  <Check size={16} className="mr-2 text-blue-500" />
+                                  Verify via OTP
+                                </button>
+                              </>
                             )}
                             <button className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                               View Details
@@ -291,9 +326,9 @@ export default function OrganizersPage() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmation.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={closeDropdown}>
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-10" onClick={closeDropdown}>
           <div 
-            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl"
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl mt-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
@@ -323,7 +358,7 @@ export default function OrganizersPage() {
 
       {/* Organizer Details Modal */}
       {isOrganizerModalOpen && selectedOrganizer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={closeOrganizerModal}>
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 z-50 flex items-center justify-center p-4 pt-10" onClick={closeOrganizerModal}>
           <div 
             className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
             onClick={(e) => e.stopPropagation()}
@@ -440,10 +475,7 @@ export default function OrganizersPage() {
                       <span className="text-gray-600 text-sm">User ID:</span>
                       <p className="font-medium font-mono text-xs">{selectedOrganizer.id}</p>
                     </div>
-                    <div>
-                      <span className="text-gray-600 text-sm">Account Created:</span>
-                      <p className="font-medium">{new Date(selectedOrganizer.createdAt).toLocaleString()}</p>
-                    </div>
+                    
                   </div>
                   <div className="space-y-3">
                     <div>
@@ -467,15 +499,26 @@ export default function OrganizersPage() {
                   Close
                 </button>
                 {!selectedOrganizer.phoneNumberVerified ? (
-                  <button
-                    onClick={() => {
-                      handleStatusUpdate(selectedOrganizer.id, true);
-                      closeOrganizerModal();
-                    }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none"
-                  >
-                    Verify Organizer
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        handleStatusUpdate(selectedOrganizer.id, true);
+                        closeOrganizerModal();
+                      }}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none"
+                    >
+                      Verify Directly
+                    </button>
+                    <button
+                      onClick={() => {
+                        closeOrganizerModal();
+                        openOtpVerificationModal(selectedOrganizer);
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none"
+                    >
+                      Verify via OTP
+                    </button>
+                  </>
                 ) : (
                   <button
                     onClick={() => {
@@ -503,6 +546,17 @@ export default function OrganizersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* OTP Verification Modal */}
+      {isOtpModalOpen && organizerToVerify && (
+        <OtpVerificationModal
+          isOpen={isOtpModalOpen}
+          onClose={() => setIsOtpModalOpen(false)}
+          phoneNumber={organizerToVerify.phoneNumber || ""}
+          isOrganizer={true}
+          onVerificationSuccess={handleVerificationSuccess}
+        />
       )}
     </div>
   );
