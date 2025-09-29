@@ -3,10 +3,10 @@
 // import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  ChevronLeft, 
-  Users, 
-  Calendar, 
+import {
+  ChevronLeft,
+  Users,
+  Calendar,
   UserCircle,
   LayoutDashboard,
   Settings,
@@ -15,7 +15,8 @@ import {
   User,
   UserCog,
   UserPlus,
-  LifeBuoy
+  LifeBuoy,
+  Zap,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -25,85 +26,91 @@ interface SidebarProps {
 
 const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
   const pathname = usePathname();
-  
+
   const mainNavItems = [
     {
       title: "Dashboard",
       icon: LayoutDashboard,
       href: "/admin",
-      isActive: pathname === "/admin"
+      isActive: pathname === "/admin",
     },
     {
       title: "Organizers",
       icon: Users,
       href: "/admin/organizers",
-      isActive: pathname === "/admin/organizers"
-    },
-    {
-      title: "Events",
-      icon: Calendar,
-      href: "/admin/events",
-      isActive: pathname === "/admin/events"
+      isActive: pathname === "/admin/organizers",
     },
     {
       title: "Travellers",
       icon: UserCircle,
       href: "/admin/travellers",
-      isActive: pathname === "/admin/travellers"
+      isActive: pathname === "/admin/travellers",
+    },
+    {
+      title: "Events",
+      icon: Calendar,
+      href: "/admin/events",
+      isActive: pathname === "/admin/events",
+    },
+    {
+      title: "Boost Requests",
+      icon: Zap,
+      href: "/admin/boost-requests",
+      isActive: pathname === "/admin/boost-requests",
     },
     {
       title: "Payments",
       icon: CreditCard,
       href: "/admin/payments",
-      isActive: pathname === "/admin/payments"
+      isActive: pathname === "/admin/payments",
+    },
+    {
+      title: "Support Requests",
+      icon: LifeBuoy,
+      href: "/admin/supportRequests",
+      isActive: pathname === "/admin/supportRequests",
     },
     {
       title: "Create Admins",
       icon: UserPlus,
       href: "/admin/admins",
-      isActive: pathname === "/admin/admins"
-    },{
-      title: "Support Requests",
-      icon: LifeBuoy,
-      href: "/admin/supportRequests",
-      isActive: pathname === "/admin/supportRequests"
+      isActive: pathname === "/admin/admins",
     },
     {
       title: "Profile",
       icon: User,
       href: "/admin/profile",
-      isActive: pathname === "/admin/profile"
+      isActive: pathname === "/admin/profile",
     },
   ];
 
   const utilityNavItems = [
-    
     {
       title: "Logout",
       icon: LogOut,
       href: "/auth/login",
-      isActive: false
-    }
+      isActive: false,
+    },
   ];
 
   return (
-    <aside 
+    <aside
       className={`fixed left-0 top-0 z-40 h-screen bg-black text-white transition-all duration-300 ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
       {/* Sidebar header with logo and collapse button */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
-        <Link 
-          href="/admin" 
+        <Link
+          href="/admin"
           className={`flex items-center gap-2 transition-opacity duration-300 ${
             isCollapsed ? "opacity-0 invisible" : "opacity-100 visible"
           }`}
         >
           <span className="text-xl font-bold">Travelon Admin</span>
         </Link>
-        
-        <button 
+
+        <button
           onClick={toggleSidebar}
           className={`p-2 rounded-full hover:bg-gray-800 transition-all duration-300 ${
             isCollapsed ? "rotate-180" : ""
@@ -112,33 +119,37 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
           <ChevronLeft size={20} />
         </button>
       </div>
-      
+
       {/* Main navigation */}
       <div className="py-6">
         <div className="px-4 mb-2">
-          <h2 className={`text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-            isCollapsed ? "opacity-0" : "opacity-100"
-          } transition-opacity duration-300`}>
+          <h2
+            className={`text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+              isCollapsed ? "opacity-0" : "opacity-100"
+            } transition-opacity duration-300`}
+          >
             Main
           </h2>
         </div>
-        
+
         <nav>
           <ul>
             {mainNavItems.map((item, index) => (
               <li key={index}>
-                <Link 
+                <Link
                   href={item.href}
                   className={`flex items-center px-4 py-3 mb-1 transition-colors duration-200 ${
-                    item.isActive 
-                      ? "bg-gray-800 text-white" 
+                    item.isActive
+                      ? "bg-gray-800 text-white"
                       : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   }`}
                 >
                   <item.icon size={20} className="shrink-0" />
-                  <span 
+                  <span
                     className={`ml-4 transition-opacity duration-300 ${
-                      isCollapsed ? "opacity-0 invisible" : "opacity-100 visible"
+                      isCollapsed
+                        ? "opacity-0 invisible"
+                        : "opacity-100 visible"
                     }`}
                   >
                     {item.title}
@@ -149,33 +160,37 @@ const Sidebar = ({ isCollapsed, toggleSidebar }: SidebarProps) => {
           </ul>
         </nav>
       </div>
-      
+
       {/* Utility navigation */}
       <div className="absolute bottom-0 left-0 right-0 py-6 border-t border-gray-800">
         <div className="px-4 mb-2">
-          <h2 className={`text-xs font-semibold text-gray-400 uppercase tracking-wider ${
-            isCollapsed ? "opacity-0" : "opacity-100"
-          } transition-opacity duration-300`}>
+          <h2
+            className={`text-xs font-semibold text-gray-400 uppercase tracking-wider ${
+              isCollapsed ? "opacity-0" : "opacity-100"
+            } transition-opacity duration-300`}
+          >
             Utility
           </h2>
         </div>
-        
+
         <nav>
           <ul>
             {utilityNavItems.map((item, index) => (
               <li key={index}>
-                <Link 
+                <Link
                   href={item.href}
                   className={`flex items-center px-4 py-3 mb-1 transition-colors duration-200 ${
-                    item.isActive 
-                      ? "bg-gray-800 text-white" 
+                    item.isActive
+                      ? "bg-gray-800 text-white"
                       : "text-gray-400 hover:bg-gray-800 hover:text-white"
                   }`}
                 >
                   <item.icon size={20} className="shrink-0" />
-                  <span 
+                  <span
                     className={`ml-4 transition-opacity duration-300 ${
-                      isCollapsed ? "opacity-0 invisible" : "opacity-100 visible"
+                      isCollapsed
+                        ? "opacity-0 invisible"
+                        : "opacity-100 visible"
                     }`}
                   >
                     {item.title}

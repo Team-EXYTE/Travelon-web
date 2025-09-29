@@ -18,6 +18,7 @@ import {
   CreditCard,
   ChevronRight,
   ChevronLeft,
+  Zap,
 } from "lucide-react";
 
 export default function OrganizerLayout({
@@ -210,6 +211,28 @@ export default function OrganizerLayout({
               </li>
               <li>
                 <Link
+                  href="/organizer/boost-events"
+                  className={`flex items-center ${
+                    isSidebarCollapsed ? "justify-center px-0" : "px-4"
+                  } py-3 rounded-lg transition-colors ${
+                    pathname === "/organizer/boost-events"
+                      ? "bg-white text-black"
+                      : "text-white hover:bg-gray-800"
+                  }`}
+                  title="Boost Events"
+                >
+                  <Zap
+                    className={`h-5 w-5 ${!isSidebarCollapsed && "mr-3"} ${
+                      pathname === "/organizer/boost-events"
+                        ? "text-black"
+                        : "text-white"
+                    }`}
+                  />
+                  {!isSidebarCollapsed && "Boost Events"}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/organizer/analytics"
                   className={`flex items-center ${
                     isSidebarCollapsed ? "justify-center px-0" : "px-4"
@@ -274,28 +297,6 @@ export default function OrganizerLayout({
                   {!isSidebarCollapsed && "Help & Support"}
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/organizer/settings"
-                  className={`flex items-center ${
-                    isSidebarCollapsed ? "justify-center px-0" : "px-4"
-                  } py-3 rounded-lg transition-colors ${
-                    pathname === "/organizer/settings"
-                      ? "bg-white text-black"
-                      : "text-white hover:bg-gray-800"
-                  }`}
-                  title="Settings"
-                >
-                  <Settings
-                    className={`h-5 w-5 ${!isSidebarCollapsed && "mr-3"} ${
-                      pathname === "/organizer/settings"
-                        ? "text-black"
-                        : "text-white"
-                    }`}
-                  />
-                  {!isSidebarCollapsed && "Settings"}
-                </Link>
-              </li>
             </ul>
           </nav>
 
@@ -345,7 +346,6 @@ export default function OrganizerLayout({
                   <Menu size={24} />
                 </button>
 
-                {/* Desktop toggle button - EXACTLY like admin layout */}
                 <button
                   onClick={toggleSidebar}
                   className="hidden md:flex items-center justify-center p-2 rounded-md hover:bg-gray-100 transition-all"
