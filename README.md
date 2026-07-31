@@ -80,6 +80,9 @@ src/
 └── lib/                    # Utility functions
 ```
 
+## Architecture
+<img src="public/architecture.png" alt="Login" width="600"/>
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -156,6 +159,23 @@ This web app works in conjunction with the Travelon mobile application, where:
 ## 🚢 Deployment
 
 The application is hosted and deployed using the [Vercel Platform](https://travelon-livid.vercel.app/) .
+
+## Technical Challenges & Creative Solutions
+
+1. The homepage uses a custom section-by-section scroll flow instead of a standard long page. The combination of fixed viewport sections, spacer divs, and section-aware navigation in [src/app/page.tsx](src/app/page.tsx), [src/components/layout/ScrollSection.tsx](src/components/layout/ScrollSection.tsx), and [src/components/layout/SectionNavbar.tsx](src/components/layout/SectionNavbar.tsx) creates a controlled presentation that still feels interactive on desktop and mobile.
+
+2. Firebase access is split between browser-safe and server-only code paths. [src/db/firebaseClient.ts](src/db/firebaseClient.ts) initializes the client SDK for authenticated UI usage, while [src/db/firebaseAdmin.ts](src/db/firebaseAdmin.ts) isolates privileged access for secure route handlers and admin-style operations.
+
+3. The UI combines marketing content, dashboards, and operational pages in one app without losing consistency. Shared layout and global style decisions in [src/app/layout.tsx](src/app/layout.tsx) and [src/app/globals.css](src/app/globals.css) keep typography, spacing, and motion consistent across the landing, admin, and organizer surfaces.
+
+4. Responsive interaction needed to work across mobile and desktop without duplicating screens. The expandable mobile navigation and desktop section indicators in [src/components/layout/SectionNavbar.tsx](src/components/layout/SectionNavbar.tsx) provide the same destination model in two different interaction styles.
+
+## Scope 
+
+- Fully implemented: public landing page, admin and organizer route structure, authentication routes, Firebase client/admin setup, and the core page/navigation system.
+- Partially implemented: some production behavior depends on connected Firebase environment variables and live backend data; those values must be configured before deployment.
+- Not implemented by choice: hardware and IoT ingestion are not part of this web submission.
+- Deliberate deviation: the project includes a polished scroll-based landing experience and dashboard structure to match the product presentation, rather than a plain static marketing site.
 
 ## 📄 License
 

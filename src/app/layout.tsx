@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Keep the browser tab and search preview aligned with the Travelon brand.
   title: "Travelon",
   description: "Sri Lanka's First Smart Hyperlocal Event Discovery App",
   icons: {

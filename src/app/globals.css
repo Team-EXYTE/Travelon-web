@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Custom Animations for Landing Page Enhancement */
+/* Landing page motion used by small accent elements, not core layout. */
 @keyframes float {
   0%, 100% {
     transform: translateY(0px);
@@ -188,7 +188,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Add to your globals.css */
+/* Leaflet needs explicit sizing so embedded maps fill their container. */
 .leaflet-container {
   height: 100%;
   width: 100%;
